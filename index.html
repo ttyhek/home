@@ -1,0 +1,2119 @@
+-->
+
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>雪原档案 · 一个安静的主页</title>
+    <style>
+        /* ===== 全局重置 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            /* 忧郁 · 雪花 · 蓝白 色板 */
+            --bg-top: #e6eef5;
+            --bg-bottom: #f8fbfd;
+            --panel: #ffffff;
+            --line: #d7e2ec;
+            --text: #33475c;
+            --ink: #22364a;
+            --dim: #8aa0b4;
+            --ice: #6f9fc4;          /* 主冰蓝 */
+            --ice-deep: #4d7ea6;
+            --frost: rgba(111, 159, 196, 0.16);
+            --night: #0f1b26;        /* 冬夜终端底色 */
+        }
+
+        body {
+            font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #dfe8f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            align-items: center;
+        }
+
+        .mono {
+            font-family: "JetBrains Mono", "Courier New", Consolas, monospace;
+        }
+
+        /* ===== 手机外框（雪原天空） ===== */
+        .phone-frame {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            max-height: 900px;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 70%);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 60px rgba(77, 126, 166, 0.18), 0 0 120px rgba(120, 150, 180, 0.15);
+            overflow: hidden;
+            border: 1px solid var(--line);
+        }
+
+        /* 淡蓝网格（远山般的底纹） */
+        .hex-bg {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(111,159,196,0.10) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(111,159,196,0.10) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 月晕（左上角安静的光） */
+        .moon-glow {
+            position: absolute;
+            top: -60px;
+            left: -60px;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(190,214,232,0.35) 55%, transparent 75%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== 飘雪画布 ===== */
+        #snowCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* ===== HUD 四角括号 ===== */
+        .hud-corner {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            z-index: 90;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .hud-corner.tl { top: 88px; left: 8px; border-top: 2px solid var(--ice); border-left: 2px solid var(--ice); }
+        .hud-corner.tr { top: 88px; right: 8px; border-top: 2px solid var(--ice); border-right: 2px solid var(--ice); }
+        .hud-corner.bl { bottom: 64px; left: 8px; border-bottom: 2px solid var(--ice); border-left: 2px solid var(--ice); }
+        .hud-corner.br { bottom: 64px; right: 8px; border-bottom: 2px solid var(--ice); border-right: 2px solid var(--ice); }
+
+        .hud-readout {
+            position: absolute;
+            left: 14px;
+            top: 112px;
+            font-size: 8px;
+            color: var(--ice-deep);
+            opacity: 0.45;
+            letter-spacing: 1px;
+            z-index: 90;
+            pointer-events: none;
+            writing-mode: vertical-rl;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        /* ===== 顶部天气跑马灯 ===== */
+        .alert-ticker {
+            height: 22px;
+            background: rgba(111, 159, 196, 0.10);
+            border-bottom: 1px solid rgba(111, 159, 196, 0.25);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 10;
+            position: relative;
+        }
+
+        .alert-ticker .track {
+            display: flex;
+            white-space: nowrap;
+            animation: ticker 26s linear infinite;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--ice-deep);
+        }
+
+        .alert-ticker .track span { padding-right: 48px; }
+
+        @keyframes ticker {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+
+        /* ===== 状态栏 ===== */
+        .status-bar {
+            height: 40px;
+            background: rgba(255,255,255,0.75);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ice-deep);
+            border-bottom: 1px solid var(--line);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+            letter-spacing: 1px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .status-bar .blink { animation: blink 2.4s ease-in-out infinite; }
+
+        @keyframes blink { 50% { opacity: 0.25; } }
+
+        /* ===== 导航标题 ===== */
+        .nav-header {
+            height: 48px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(214,231,243,0.8) 50%, rgba(255,255,255,0.6) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--ice-deep);
+            border-bottom: 1px solid var(--line);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+            letter-spacing: 6px;
+            font-family: "JetBrains Mono", monospace;
+            transition: color 0.15s;
+        }
+
+        .nav-header::before,
+        .nav-header::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 60px;
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(111, 159, 196, 0.18) 0px,
+                rgba(111, 159, 196, 0.18) 6px,
+                transparent 6px,
+                transparent 12px
+            );
+            mask-image: linear-gradient(90deg, transparent, #000);
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000);
+        }
+        .nav-header::before { left: 0; }
+        .nav-header::after {
+            right: 0;
+            mask-image: linear-gradient(-90deg, transparent, #000);
+            -webkit-mask-image: linear-gradient(-90deg, transparent, #000);
+        }
+
+        .atfield-toast {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 100%;
+            text-align: center;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: var(--ice-deep);
+            padding-top: 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            font-family: "JetBrains Mono", monospace;
+            z-index: 11;
+        }
+        .atfield-toast.show { opacity: 0.9; }
+
+        /* ===== 换页闪光层 ===== */
+        .page-flash {
+            position: absolute;
+            inset: 0;
+            background: var(--flash-color, rgba(255,255,255,0.25));
+            opacity: 0;
+            pointer-events: none;
+            z-index: 80;
+        }
+        .page-flash.flash { animation: pageFlash 0.5s ease-out; }
+
+        @keyframes pageFlash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ===== 内容滑动区 ===== */
+        .content-slider {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: transparent;
+            z-index: 1;
+        }
+
+        .slides-wrapper {
+            display: flex;
+            width: 400%;
+            height: 100%;
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+        }
+
+        .slide {
+            width: 25%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 20px;
+            text-align: center;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            position: relative;
+        }
+
+        .slide::-webkit-scrollbar { display: none; }
+
+        #slide1 { --accent: #6f9fc4; --accent-soft: rgba(111,159,196,0.14); }
+        #slide2 { --accent: #55a0b4; --accent-soft: rgba(85,160,180,0.13); }
+        #slide3 { --accent: #6480b8; --accent-soft: rgba(100,128,184,0.13); }
+        #slide4 { --accent: #8b9fc9; --accent-soft: rgba(139,159,201,0.14); }
+
+        .slide::before {
+            content: "";
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent-soft), transparent 70%);
+            pointer-events: none;
+        }
+
+        /* ===== 六边形头像（六角雪花） ===== */
+        .hex-avatar {
+            width: 108px;
+            height: 118px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            position: relative;
+            filter: drop-shadow(0 4px 14px rgba(77, 126, 166, 0.22));
+            cursor: pointer;
+        }
+
+        .hex-avatar.lg { width: 136px; height: 148px; }
+
+        .hex-avatar::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+            background: linear-gradient(160deg, var(--accent), rgba(255,255,255,0.7) 75%);
+            z-index: 0;
+        }
+
+        .hex-avatar::after {
+            content: "";
+            position: absolute;
+            inset: 3px;
+            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+            background: var(--panel);
+            z-index: 1;
+        }
+
+        /* 立绘统一调成冰蓝双色调 */
+        .hex-avatar img {
+            position: absolute;
+            inset: 3px;
+            width: calc(100% - 6px);
+            height: calc(100% - 6px);
+            object-fit: cover;
+            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+            z-index: 2;
+            filter: grayscale(1) brightness(1.06) sepia(0.32) hue-rotate(172deg) saturate(1.5) contrast(0.96);
+        }
+
+        /* 旋转的六角雪花虚线环 */
+        .at-ring-deco {
+            position: absolute;
+            inset: -14px;
+            width: calc(100% + 28px);
+            height: calc(100% + 28px);
+            z-index: 3;
+            pointer-events: none;
+            opacity: 0.55;
+            animation: ringSpin 20s linear infinite;
+            overflow: visible;
+        }
+
+        @keyframes ringSpin { to { transform: rotate(360deg); } }
+
+        /* 点击头像时的冰环扩散 */
+        .atfield-ring {
+            position: absolute;
+            inset: -10px;
+            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+            border: 2px solid var(--ice);
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0;
+        }
+
+        .atfield-ring.pop { animation: atfieldPop 0.9s ease-out; }
+
+        @keyframes atfieldPop {
+            0%   { transform: scale(1);    opacity: 0.8; }
+            100% { transform: scale(2.6);  opacity: 0; }
+        }
+
+        .slide h2 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: var(--ink);
+            letter-spacing: 4px;
+        }
+
+        .file-id {
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+            opacity: 0.95;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .slide .subtitle {
+            font-size: 13px;
+            color: var(--dim);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        /* ===== 卡片（雪地上的纸） ===== */
+        .slide .card {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--accent);
+            border-radius: 8px;
+            padding: 16px;
+            width: 100%;
+            max-width: 320px;
+            text-align: left;
+            margin-bottom: 14px;
+            position: relative;
+            box-shadow: 0 2px 12px rgba(77, 126, 166, 0.08);
+        }
+
+        .slide .card::before {
+            content: "";
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            width: 14px;
+            height: 14px;
+            border-top: 2px solid var(--accent);
+            border-right: 2px solid var(--accent);
+            opacity: 0.5;
+        }
+
+        .slide .card h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            font-family: "JetBrains Mono", "Courier New", monospace;
+        }
+
+        .slide .card p {
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.7;
+            margin-bottom: 4px;
+        }
+
+        .slide .card .tag {
+            display: inline-block;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1px solid rgba(111,159,196,0.35);
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .slide .card strong { color: var(--ink); }
+
+        .swipe-hint {
+            font-size: 11px;
+            color: var(--dim);
+            margin-top: 8px;
+            letter-spacing: 3px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        /* ===== 作品卡片雪花配图 ===== */
+        .work-art {
+            height: 116px;
+            border-radius: 6px;
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, #eef4f9, #dbe8f2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .work-art svg { width: 72px; height: 78px; }
+        .work-art .wa-note {
+            position: absolute;
+            bottom: 4px;
+            right: 8px;
+            font-size: 8px;
+            color: var(--dim);
+            letter-spacing: 1px;
+            font-family: "JetBrains Mono", monospace;
+            opacity: 0.7;
+        }
+
+        /* ===== 板评页雪人轮播 ===== */
+        .board-viewport {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, #eef4f9, #dbe8f2);
+        }
+        .board-track {
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .board-item {
+            min-width: 100%;
+            height: 190px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .board-item svg { width: 96px; height: 120px; }
+        .board-item .bm-label {
+            font-size: 10px;
+            color: var(--ice-deep);
+            letter-spacing: 3px;
+            font-family: "JetBrains Mono", monospace;
+        }
+        .board-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .board-dots .bdot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #c6d6e2;
+            transition: background 0.3s;
+        }
+        .board-dots .bdot.active { background: var(--ice); }
+
+        /* ===== 打字机 ===== */
+        .type-cursor {
+            display: inline-block;
+            width: 7px;
+            background: var(--accent);
+            animation: blink 1s steps(2) infinite;
+            margin-left: 1px;
+        }
+
+        /* ===== 信息网格 ===== */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 14px;
+            margin-top: 2px;
+        }
+
+        .info-grid .k {
+            font-size: 10px;
+            color: var(--dim);
+            letter-spacing: 2px;
+            font-family: "JetBrains Mono", monospace;
+            margin-bottom: 2px;
+        }
+
+        .info-grid .v { font-size: 12px; color: var(--ink); }
+
+        /* ===== 能力值条 ===== */
+        .sync-row {
+            width: 100%;
+            max-width: 320px;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .sync-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .sync-label .val { color: var(--accent); font-weight: 700; }
+
+        .sync-track {
+            height: 8px;
+            background: #e3ecf3;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sync-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 6px;
+            background: linear-gradient(90deg, rgba(111,159,196,0.65), var(--accent));
+            transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* ===== 三重自检面板 ===== */
+        .magi-panel {
+            width: 100%;
+            max-width: 320px;
+            background: rgba(255,255,255,0.88);
+            border: 1px solid rgba(111,159,196,0.4);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            text-align: left;
+            position: relative;
+            box-shadow: 0 2px 12px rgba(77, 126, 166, 0.08);
+        }
+
+        .magi-panel .magi-title {
+            font-size: 12px;
+            color: var(--ice-deep);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            font-family: "JetBrains Mono", monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .magi-panel .magi-title .state {
+            font-size: 9px;
+            padding: 1px 6px;
+            border: 1px solid var(--ice);
+            border-radius: 8px;
+            color: var(--ice-deep);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        .magi-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            opacity: 0;
+            transform: translateX(-8px);
+            transition: opacity 0.4s, transform 0.4s;
+        }
+
+        .magi-row.in { opacity: 1; transform: translateX(0); }
+
+        .magi-row .node {
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(111,159,196,0.5);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            font-size: 9px;
+            color: var(--ice-deep);
+            font-family: "JetBrains Mono", monospace;
+            background: var(--accent-soft);
+        }
+
+        .magi-row .info { flex: 1; }
+
+        .magi-row .name {
+            font-size: 11px;
+            color: var(--ink);
+            letter-spacing: 1px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .magi-row .verdict {
+            font-size: 10px;
+            color: var(--dim);
+        }
+
+        .magi-row .verdict b { color: var(--accent); }
+
+        .magi-row .pct {
+            font-size: 13px;
+            color: var(--ice-deep);
+            font-weight: 700;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        /* ===== 作品集 ===== */
+        .op-code {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            font-size: 10px;
+            color: var(--dim);
+            letter-spacing: 1px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .threat {
+            display: inline-block;
+            font-size: 9px;
+            padding: 1px 6px;
+            border-radius: 8px;
+            letter-spacing: 1px;
+            margin-left: 6px;
+            vertical-align: 1px;
+            font-family: "JetBrains Mono", monospace;
+        }
+        .threat.done { border: 1px solid var(--ice); color: var(--ice-deep); }
+        .threat.live { border: 1px solid #b08a4f; color: #a07a3f; animation: blink 2.4s ease-in-out infinite; }
+
+        /* ===== 聊天气泡 ===== */
+        .chat-bubble {
+            background: rgba(255,255,255,0.92);
+            border: 1px solid rgba(111,159,196,0.4);
+            color: var(--text);
+            border-radius: 12px 12px 12px 3px;
+            padding: 10px 14px;
+            max-width: 250px;
+            align-self: flex-start;
+            margin-bottom: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            font-family: "JetBrains Mono", monospace;
+            box-shadow: 0 1px 6px rgba(77,126,166,0.08);
+        }
+
+        .chat-bubble::before { content: "SNOW > "; color: var(--dim); }
+
+        .chat-bubble.right {
+            background: rgba(111,159,196,0.12);
+            border: 1px solid rgba(111,159,196,0.45);
+            color: var(--ice-deep);
+            border-radius: 12px 12px 3px 12px;
+            align-self: flex-end;
+        }
+
+        .chat-bubble.right::before { content: "YOU > "; }
+
+        .chat-area {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            margin-top: 8px;
+        }
+
+        /* ===== 心绪波形 ===== */
+        .lcl-wrap {
+            width: 100%;
+            max-width: 320px;
+            border: 1px solid var(--line);
+            background: rgba(15, 27, 38, 0.88);
+            border-radius: 8px;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lcl-wrap .lcl-label {
+            position: absolute;
+            top: 4px;
+            left: 8px;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: #9fc3dd;
+            font-family: "JetBrains Mono", monospace;
+            z-index: 2;
+        }
+
+        #lclWave { display: block; width: 100%; height: 54px; }
+
+        /* ===== 初雪倒计时 ===== */
+        .angel-countdown {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 15px;
+            color: var(--ice-deep);
+            letter-spacing: 2px;
+        }
+
+        /* ===== 按钮 ===== */
+        .btn {
+            background: transparent;
+            color: var(--ice-deep);
+            border: 1px solid var(--ice);
+            border-radius: 20px;
+            padding: 10px 28px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 4px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .btn:active {
+            background: var(--ice);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(111,159,196,0.45);
+        }
+
+        /* ===== Tab 栏 ===== */
+        .tab-bar {
+            height: 58px;
+            background: rgba(255,255,255,0.85);
+            border-top: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-shrink: 0;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+            z-index: 20;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            height: 100%;
+            color: var(--dim);
+            font-size: 10px;
+            letter-spacing: 2px;
+            transition: color 0.2s;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            position: relative;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .tab-item .icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+            line-height: 1;
+            filter: grayscale(0.6) opacity(0.55);
+            transition: filter 0.2s;
+        }
+
+        .tab-item.active { color: var(--ice-deep); }
+        .tab-item.active .icon {
+            filter: none;
+            text-shadow: 0 0 10px rgba(111,159,196,0.55);
+        }
+
+        .tab-item .badge {
+            position: absolute;
+            top: 8px;
+            right: 50%;
+            transform: translateX(14px);
+            background: var(--ice-deep);
+            color: #fff;
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 8px;
+            min-width: 16px;
+            text-align: center;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        /* ===== 指示器（雪点） ===== */
+        .indicator {
+            position: absolute;
+            bottom: 12px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        .indicator .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #c6d6e2;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .indicator .dot.active {
+            background: var(--ice);
+            transform: scale(1.3);
+            box-shadow: 0 0 6px rgba(111,159,196,0.6);
+        }
+
+        .nerv-motto {
+            font-size: 9px;
+            color: var(--dim);
+            letter-spacing: 2px;
+            margin-top: 14px;
+            text-align: center;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .nerv-motto em { color: var(--accent); font-style: normal; }
+
+        /* ===== 隐藏终端（冬夜控制台） ===== */
+        .magi-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 66px;
+            z-index: 60;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #9fc3dd;
+            border: 1px solid rgba(159,195,221,0.6);
+            background: rgba(15, 27, 38, 0.82);
+            padding: 5px 8px;
+            border-radius: 2px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .magi-btn:active { background: #9fc3dd; color: #0f1b26; }
+
+        .terminal {
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            bottom: 66px;
+            max-height: 48%;
+            z-index: 70;
+            background: rgba(15, 27, 38, 0.96);
+            border: 1px solid rgba(159,195,221,0.45);
+            box-shadow: 0 8px 32px rgba(31, 58, 82, 0.35);
+            display: flex;
+            flex-direction: column;
+            font-family: "JetBrains Mono", monospace;
+            transform: translateY(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.25s, opacity 0.25s;
+        }
+
+        .terminal.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+        .t-head {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: #9fc3dd;
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(159,195,221,0.25);
+            background: rgba(159,195,221,0.06);
+        }
+
+        .t-close { cursor: pointer; }
+
+        .t-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #b8d4e8;
+            min-height: 120px;
+        }
+
+        .t-line { white-space: pre-wrap; word-break: break-all; }
+
+        .t-input-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 8px;
+            border-top: 1px solid rgba(159,195,221,0.25);
+        }
+
+        .t-prompt { font-size: 11px; color: #9fc3dd; }
+
+        .t-input-row input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #d7e8f4;
+            font-size: 12px;
+            font-family: inherit;
+            caret-color: #9fc3dd;
+        }
+
+        /* ===== 六边形点击波纹 ===== */
+        .hex-ripple {
+            position: absolute;
+            width: 48px;
+            height: 52px;
+            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+            background: rgba(140, 180, 214, 0.35);
+            pointer-events: none;
+            z-index: 75;
+            animation: hexRip 0.65s ease-out forwards;
+        }
+
+        @keyframes hexRip {
+            from { transform: scale(0.4); opacity: 0.9; }
+            to   { transform: scale(2.4); opacity: 0; }
+        }
+
+        /* ===== 暴风雪彩蛋 ===== */
+        .berserk {
+            position: absolute;
+            inset: 0;
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background: rgba(205, 226, 240, 0.94);
+        }
+
+        .berserk.on {
+            display: flex;
+            animation: stormFlash 0.5s ease-in-out infinite;
+        }
+
+        @keyframes stormFlash {
+            0%, 100% { background: rgba(205, 226, 240, 0.94); }
+            50%      { background: rgba(240, 247, 252, 0.96); }
+        }
+
+        .berserk .b-title {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 10px;
+            color: var(--ice-deep);
+            text-indent: 10px;
+            font-family: "JetBrains Mono", monospace;
+            text-shadow: 0 0 20px rgba(255,255,255,0.9);
+        }
+
+        .berserk .b-sub {
+            font-size: 12px;
+            color: #4d7ea6;
+            letter-spacing: 3px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        /* ===== 暴风雪震屏 ===== */
+        .phone-frame.shake { animation: frameShake 0.14s ease-in-out infinite; }
+
+        @keyframes frameShake {
+            0%   { transform: translate(2px, -2px); }
+            25%  { transform: translate(-2px, 1px); }
+            50%  { transform: translate(1px, 2px); }
+            75%  { transform: translate(-1px, -1px); }
+            100% { transform: translate(2px, -2px); }
+        }
+
+        /* ===== 开机动画 ===== */
+        .boot-screen {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, #e6eef5, #f8fbfd);
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: opacity 0.6s;
+        }
+
+        .boot-screen.hidden { opacity: 0; pointer-events: none; }
+
+        .boot-logo {
+            font-size: 40px;
+            font-weight: 900;
+            letter-spacing: 14px;
+            color: var(--ice-deep);
+            text-indent: 14px;
+            animation: bootGlow 1.4s ease-in-out infinite alternate;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        @keyframes bootGlow {
+            from { text-shadow: 0 0 8px rgba(111,159,196,0.4); }
+            to   { text-shadow: 0 0 26px rgba(111,159,196,0.85); }
+        }
+
+        .boot-text {
+            font-size: 11px;
+            color: var(--ice-deep);
+            letter-spacing: 2px;
+            font-family: "JetBrains Mono", monospace;
+            opacity: 0.85;
+        }
+
+        .boot-bar {
+            width: 200px;
+            height: 4px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .boot-bar i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, rgba(111,159,196,0.5), var(--ice));
+            animation: bootLoad 1.6s ease-out forwards;
+        }
+
+        @keyframes bootLoad { to { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="hex-bg"></div>
+        <div class="moon-glow"></div>
+        <canvas id="snowCanvas"></canvas>
+
+        <!-- HUD 四角括号 + 读数 -->
+        <div class="hud-corner tl"></div>
+        <div class="hud-corner tr"></div>
+        <div class="hud-corner bl"></div>
+        <div class="hud-corner br"></div>
+        <div class="hud-readout" id="hudReadout">X:0000 Y:0000</div>
+
+        <!-- 暴风雪彩蛋 -->
+        <div class="berserk" id="berserk">
+            <div class="b-title">SNOWSTORM</div>
+            <div class="b-sub">白 Noise — 暴风雪模式已激活</div>
+            <div class="b-sub" style="opacity:0.6;">雪太大了，等它停一停</div>
+        </div>
+
+        <!-- 换页闪光层 -->
+        <div class="page-flash" id="pageFlash"></div>
+
+        <!-- 开机动画 -->
+        <div class="boot-screen" id="bootScreen">
+            <div class="boot-logo">SNOW</div>
+            <div class="boot-text" id="bootText">WINTER SYSTEM BOOTING...</div>
+            <div class="boot-bar"><i></i></div>
+            <div class="boot-text" style="opacity:0.5; font-size:9px;">SNOW IS SILENT. SO AM I.</div>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <span class="time">09:41</span>
+            <span style="flex:1; text-align:center; color:#b6c9d8; font-size:10px;">SNOW OS v3.14 // 冬季限定</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <span class="blink">❄ -2°C</span>
+                <span id="sndBtn" style="cursor:pointer;" title="音效开关">🔊</span>
+            </div>
+        </div>
+
+        <!-- 天气跑马灯 -->
+        <div class="alert-ticker">
+            <div class="track">
+                <span>❄ 降雪预报 — 今夜小雪 · 气温 -2°C</span>
+                <span>❄ 窗外的世界正在慢慢变白</span>
+                <span>❄ 热可可补给站 24h 开放</span>
+                <span>❄ 降雪预报 — 今夜小雪 · 气温 -2°C</span>
+                <span>❄ 窗外的世界正在慢慢变白</span>
+                <span>❄ 热可可补给站 24h 开放</span>
+            </div>
+        </div>
+
+        <!-- 导航标题 -->
+        <div class="nav-header" id="navTitle">关于我
+            <div class="atfield-toast" id="atToast">FROST FIELD — FULL EXPANSION</div>
+        </div>
+
+        <!-- 内容滑动区域 -->
+        <div class="content-slider" id="contentSlider">
+            <div class="slides-wrapper" id="slidesWrapper">
+
+                <!-- 第一页：关于我 -->
+                <div class="slide" id="slide1">
+                    <div class="hex-avatar lg" data-page="0">
+                        <svg class="at-ring-deco" viewBox="0 0 100 110" preserveAspectRatio="none">
+                            <polygon points="50,2 96,28 96,82 50,108 4,82 4,28"
+                                     fill="none" stroke="#6f9fc4" stroke-width="1.5"
+                                     stroke-dasharray="6 5"/>
+                        </svg>
+                        <img src="__IMG_P1__" alt="人物立绘">
+                    </div>
+                    <div class="file-id">FILE No. 001-A // PROFILE</div>
+                    <h2>ALEX CHEN</h2>
+                    <div class="subtitle" id="pilotPhase">全栈开发者 · 住在下雪的城市</div>
+
+                    <div class="card">
+                        <h3>// 自我介绍</h3>
+                        <p><span id="typeTarget"></span><span class="type-cursor">&nbsp;</span></p>
+                        <p>5 年开发经验，专注前端架构与交互设计。喜欢安静的代码，也喜欢把想法轻轻放进作品里。</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>// 基本情报</h3>
+                        <div class="info-grid">
+                            <div><div class="k">名字</div><div class="v">Alex</div></div>
+                            <div><div class="k">职业</div><div class="v">全栈开发者</div></div>
+                            <div><div class="k">驻地</div><div class="v">深圳 · 无雪但冷</div></div>
+                            <div><div class="k">经验</div><div class="v">5 年 · 持续降雪中</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>// 常驻团为</h3>
+                        <div>
+                            <span class="tag">React</span>
+                            <span class="tag">Node.js</span>
+                            <span class="tag">TypeScript</span>
+                            <span class="tag">UI/UX</span>
+                        </div>
+                    </div>
+                    <div class="swipe-hint">← 左右滑动 · 踩雪前行 →</div>
+                    <div class="nerv-motto">SNOW IS SILENT. <em>SO AM I.</em></div>
+                </div>
+
+                <!-- 第二页：能力谱 -->
+                <div class="slide" id="slide2">
+                    <div class="hex-avatar" data-page="1"><img src="__IMG_P2__" alt="人物立绘"></div>
+                    <div class="file-id">FILE No. 002-B // SKILLS</div>
+                    <h2>能力谱</h2>
+                    <div class="subtitle">ABILITIES · 安静地持续输出</div>
+
+                    <div class="sync-row">
+                        <div class="sync-label"><span>FRONTEND / 前端架构</span><span class="val" data-rate="92">0%</span></div>
+                        <div class="sync-track"><div class="sync-fill" data-rate="92"></div></div>
+                    </div>
+                    <div class="sync-row">
+                        <div class="sync-label"><span>BACKEND / 服务端</span><span class="val" data-rate="85">0%</span></div>
+                        <div class="sync-track"><div class="sync-fill" data-rate="85"></div></div>
+                    </div>
+                    <div class="sync-row">
+                        <div class="sync-label"><span>DEVOPS / 部署运维</span><span class="val" data-rate="74">0%</span></div>
+                        <div class="sync-track"><div class="sync-fill" data-rate="74"></div></div>
+                    </div>
+                    <div class="sync-row">
+                        <div class="sync-label"><span>DESIGN / 交互设计</span><span class="val" data-rate="80">0%</span></div>
+                        <div class="sync-track"><div class="sync-fill" data-rate="80"></div></div>
+                    </div>
+
+                    <div class="magi-panel">
+                        <div class="magi-title"><span>冬季三重自检 · 能力复核</span><span class="state">LIVE</span></div>
+                        <div class="magi-row">
+                            <div class="node">S-1</div>
+                            <div class="info">
+                                <div class="name">SNOW-1 · 理性评估</div>
+                                <div class="verdict">架构思维 · <b>APPROVED</b> — 底层扎实</div>
+                            </div>
+                            <div class="pct" data-pct="92">0%</div>
+                        </div>
+                        <div class="magi-row">
+                            <div class="node">S-2</div>
+                            <div class="info">
+                                <div class="name">SNOW-2 · 情感评估</div>
+                                <div class="verdict">协作氛围 · <b>APPROVED</b> — 温和可靠</div>
+                            </div>
+                            <div class="pct" data-pct="88">0%</div>
+                        </div>
+                        <div class="magi-row">
+                            <div class="node">S-3</div>
+                            <div class="info">
+                                <div class="name">SNOW-3 · 直觉评估</div>
+                                <div class="verdict">审美直觉 · <b>CONDITIONAL</b> — 作品还要再攒一些</div>
+                            </div>
+                            <div class="pct" data-pct="76">0%</div>
+                        </div>
+                        <div class="magi-row">
+                            <div class="node">S-4</div>
+                            <div class="info">
+                                <div class="name">SNOW-4 · 专注评估</div>
+                                <div class="verdict">长线耐心 · <b>APPROVED</b> — 落雪式坚持</div>
+                            </div>
+                            <div class="pct" data-pct="84">0%</div>
+                        </div>
+                        <div class="magi-row">
+                            <div class="node">S-5</div>
+                            <div class="info">
+                                <div class="name">SNOW-5 · 审美评估</div>
+                                <div class="verdict">画面感觉 · <b>CONDITIONAL</b> — 观众口味各异</div>
+                            </div>
+                            <div class="pct" data-pct="79">0%</div>
+                        </div>
+                        <div class="magi-row">
+                            <div class="node">S-6</div>
+                            <div class="info">
+                                <div class="name">SNOW-6 · 韧性评估</div>
+                                <div class="verdict">抗压恢复 · <b>APPROVED</b> — 摔倒即重启</div>
+                            </div>
+                            <div class="pct" data-pct="90">0%</div>
+                        </div>
+                        <div style="border-top:1px solid var(--line); margin-top:10px; padding-top:8px; font-size:10px; color:var(--dim); letter-spacing:1px;" class="mono">综合评定：适格 — 本季最长情的旅人</div>
+                    </div>
+
+                    <div class="swipe-hint">← 继续滑动 →</div>
+                </div>
+
+                <!-- 第三页：作品集 -->
+                <div class="slide" id="slide3">
+                    <div class="hex-avatar" data-page="2"><img src="__IMG_P3__" alt="人物立绘"></div>
+                    <div class="file-id">FILE No. 003-C // WORKS</div>
+                    <h2>作品集</h2>
+                    <div class="subtitle">WORKS · 雪地里留下的脚印</div>
+
+                    <div class="card">
+                        <span class="op-code">PRJ-001</span>
+                        <h3>// 温柔刀白话<span class="threat done">已完结</span></h3>
+                        <div class="work-art"><svg viewBox="0 0 100 110">
+                            <g stroke="#6f9fc4" stroke-width="2.4" stroke-linecap="round" fill="none">
+                                <g transform="translate(50,55)">
+                                    <line x1="0" y1="-42" x2="0" y2="42"/>
+                                    <line x1="-36.4" y1="-21" x2="36.4" y2="21"/>
+                                    <line x1="-36.4" y1="21" x2="36.4" y2="-21"/>
+                                    <g stroke-width="1.8">
+                                        <line x1="0" y1="-26" x2="-9" y2="-35"/><line x1="0" y1="-26" x2="9" y2="-35"/>
+                                        <line x1="22.5" y1="-13" x2="34" y2="-15"/><line x1="22.5" y1="-13" x2="25" y2="-1"/>
+                                        <line x1="22.5" y1="13" x2="34" y2="15"/><line x1="22.5" y1="13" x2="25" y2="1"/>
+                                        <line x1="0" y1="26" x2="-9" y2="35"/><line x1="0" y1="26" x2="9" y2="35"/>
+                                        <line x1="-22.5" y1="13" x2="-34" y2="15"/><line x1="-22.5" y1="13" x2="-25" y2="1"/>
+                                        <line x1="-22.5" y1="-13" x2="-34" y2="-15"/><line x1="-22.5" y1="-13" x2="-25" y2="-1"/>
+                                    </g>
+                                    <circle cx="0" cy="0" r="5" fill="#6f9fc4" stroke="none"/>
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="wa-note">flake-01 / 温柔刀</span></div>
+                    </div>
+                    <div class="card">
+                        <span class="op-code">PRJ-002</span>
+                        <h3>// 高擦病虐<span class="threat done">已完结</span></h3>
+                        <div class="work-art"><svg viewBox="0 0 100 110">
+                            <g stroke="#6480b8" stroke-width="2.2" stroke-linecap="round" fill="none">
+                                <g transform="translate(50,55)">
+                                    <circle r="9"/>
+                                    <g>
+                                        <line x1="0" y1="-9" x2="0" y2="-40"/><line x1="0" y1="9" x2="0" y2="40"/>
+                                        <line x1="7.8" y1="-4.5" x2="34.6" y2="-20"/><line x1="-7.8" y1="-4.5" x2="-34.6" y2="-20"/>
+                                        <line x1="7.8" y1="4.5" x2="34.6" y2="20"/><line x1="-7.8" y1="4.5" x2="-34.6" y2="20"/>
+                                        <line x1="7.8" y1="-4.5" x2="7.8" y2="4.5" transform="rotate(0)" opacity="0"/>
+                                    </g>
+                                    <g stroke-width="1.6">
+                                        <circle cx="0" cy="-40" r="2.6" fill="#6480b8" stroke="none"/>
+                                        <circle cx="34.6" cy="-20" r="2.6" fill="#6480b8" stroke="none"/>
+                                        <circle cx="34.6" cy="20" r="2.6" fill="#6480b8" stroke="none"/>
+                                        <circle cx="0" cy="40" r="2.6" fill="#6480b8" stroke="none"/>
+                                        <circle cx="-34.6" cy="20" r="2.6" fill="#6480b8" stroke="none"/>
+                                        <circle cx="-34.6" cy="-20" r="2.6" fill="#6480b8" stroke="none"/>
+                                    </g>
+                                    <circle r="15" stroke-dasharray="3 4" stroke-width="1.4" opacity="0.6"/>
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="wa-note">flake-02 / 高擦病虐</span></div>
+                    </div>
+                    <div class="card">
+                        <span class="op-code">PRJ-003</span>
+                        <h3>// 其他风格<span class="threat live">进行中</span></h3>
+                        <div class="work-art"><svg viewBox="0 0 100 110">
+                            <g stroke="#8b9fc9" stroke-width="2" stroke-linecap="round" fill="none">
+                                <g transform="translate(50,55)">
+                                    <circle r="4" fill="#8b9fc9" stroke="none"/>
+                                    <g id="a3">
+                                        <line x1="0" y1="-7" x2="0" y2="-38"/>
+                                        <line x1="0" y1="-20" x2="-8" y2="-27"/><line x1="0" y1="-20" x2="8" y2="-27"/>
+                                        <line x1="0" y1="-30" x2="-6" y2="-36"/><line x1="0" y1="-30" x2="6" y2="-36"/>
+                                    </g>
+                                    <use href="#a3" transform="rotate(60)"/>
+                                    <use href="#a3" transform="rotate(120)"/>
+                                    <use href="#a3" transform="rotate(180)"/>
+                                    <use href="#a3" transform="rotate(240)"/>
+                                    <use href="#a3" transform="rotate(300)"/>
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="wa-note">flake-03 / 其他风格</span></div>
+                    </div>
+                    <div class="swipe-hint">← 最后一页 · 写信给我 →</div>
+                </div>
+
+                <!-- 第四页：板评（雪人轮播） -->
+                <div class="slide" id="slide4">
+                    <div class="hex-avatar" data-page="3"><img src="__IMG_P4__" alt="人物立绘"></div>
+                    <div class="file-id">FILE No. 004-D // BOARD</div>
+                    <h2>板评</h2>
+                    <div class="subtitle">雪人画廊 · 向左滑动观看</div>
+
+                    <div class="card">
+                        <div class="board-viewport">
+                            <div class="board-track" id="boardTrack">
+                                <div class="board-item"><svg viewBox="0 0 120 150">
+                                <g fill="#ffffff" stroke="#a9c2d6" stroke-width="2">
+                                    <circle cx="60" cy="106" r="30"/>
+                                    <circle cx="60" cy="62" r="22"/>
+                                </g>
+                                <g stroke="#7c6a54" stroke-width="2.6" stroke-linecap="round">
+                                    <line x1="38" y1="62" x2="18" y2="48"/><line x1="82" y1="62" x2="102" y2="48"/>
+                                </g>
+                                <circle cx="53" cy="58" r="2.6" fill="#33475c"/>
+                                <circle cx="67" cy="58" r="2.6" fill="#33475c"/>
+                                <path d="M52 68 Q60 74 68 68" stroke="#33475c" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                <path d="M40 82 Q60 96 80 82 L76 90 Q60 102 44 90 Z" fill="#6f9fc4"/>
+                                <path d="M46 84 Q60 92 74 84" stroke="#5a88ad" stroke-width="2" fill="none"/>
+                                <path d="M74 84 L92 80" stroke="#6f9fc4" stroke-width="7" stroke-linecap="round"/>
+                                <circle cx="48" cy="66" r="3.5" fill="#f0b8c0" opacity="0.55"/>
+                                <circle cx="72" cy="66" r="3.5" fill="#f0b8c0" opacity="0.55"/>
+                            </svg>
+                            <span class="bm-label">SMILE / 围巾款</span></div>
+                                <div class="board-item"><svg viewBox="0 0 120 150">
+                                <g fill="#ffffff" stroke="#a9c2d6" stroke-width="2">
+                                    <circle cx="60" cy="106" r="30"/>
+                                    <circle cx="60" cy="62" r="22"/>
+                                </g>
+                                <g stroke="#7c6a54" stroke-width="2.6" stroke-linecap="round">
+                                    <line x1="38" y1="60" x2="16" y2="70"/><line x1="82" y1="60" x2="104" y2="70"/>
+                                </g>
+                                <rect x="42" y="30" width="36" height="18" rx="3" fill="#6480b8"/>
+                                <rect x="36" y="46" width="48" height="6" rx="3" fill="#4d6f9e"/>
+                                <path d="M50 58 Q55 63 60 58 M60 58 Q65 63 70 58" stroke="#33475c" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                <path d="M55 69 Q60 66 65 69" stroke="#33475c" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                <path d="M42 80 Q60 92 78 80 L74 88 Q60 98 46 88 Z" fill="#8b9fc9"/>
+                                <circle cx="60" cy="104" r="4" fill="#6480b8"/>
+                                <circle cx="60" cy="114" r="4" fill="#6480b8"/>
+                            </svg>
+                            <span class="bm-label">CALM / 高帽款</span></div>
+                                <div class="board-item"><svg viewBox="0 0 120 150">
+                                <g fill="#f4f8fb" stroke="#b4c8d9" stroke-width="2">
+                                    <circle cx="60" cy="106" r="30"/>
+                                    <circle cx="60" cy="62" r="22"/>
+                                </g>
+                                <g stroke="#7c6a54" stroke-width="2.6" stroke-linecap="round">
+                                    <line x1="38" y1="64" x2="20" y2="54"/><line x1="82" y1="64" x2="100" y2="54"/>
+                                </g>
+                                <line x1="52" y1="58" x2="58" y2="58" stroke="#33475c" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="62" y1="58" x2="68" y2="58" stroke="#33475c" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="56" y1="70" x2="64" y2="70" stroke="#33475c" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="48" cy="65" r="4" fill="#b8cbe0" opacity="0.8"/>
+                                <circle cx="72" cy="65" r="4" fill="#b8cbe0" opacity="0.8"/>
+                                <path d="M42 84 Q60 96 78 84 L74 92 Q60 100 46 92 Z" fill="#9aacc2"/>
+                                <path d="M44 40 Q60 30 76 40" stroke="#9aacc2" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+                                <path d="M78 92 L94 86" stroke="#9aacc2" stroke-width="6" stroke-linecap="round"/>
+                                <path d="M90 80 q4 -6 8 -2 q-2 6 -8 2" fill="#b8cbe0"/>
+                            </svg>
+                            <span class="bm-label">MELANCHOLY / 忧郁款</span></div>
+                            </div>
+                        </div>
+                        <div class="board-dots" id="boardDots">
+                            <span class="bdot active"></span>
+                            <span class="bdot"></span>
+                            <span class="bdot"></span>
+                        </div>
+                        <div style="border-top:1px solid var(--line); margin-top:10px; padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:10px; color:var(--dim); letter-spacing:2px;" class="mono">初雪倒计时</span>
+                            <span class="angel-countdown" id="angelCountdown" style="font-size:13px;">T-00:00:00</span>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="alert('来信已投入信箱 · 期待回复')">寄一封信</button>
+                </div>
+            </div>
+            <div class="indicator" id="indicator">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+
+        <!-- 隐藏终端呼出按钮 -->
+        <div class="magi-btn mono" id="magiBtn">SNOW&gt;</div>
+
+        <!-- 隐藏终端（冬夜控制台） -->
+        <div class="terminal" id="terminal">
+            <div class="t-head"><span>FROST TERMINAL // 输入 help 查看指令</span><span class="t-close" id="tClose">[X]</span></div>
+            <div class="t-body" id="tBody">
+                <div class="t-line" style="color:#6d8598;">FROST OS 3.14 — 冬季系统在线</div>
+                <div class="t-line" style="color:#6d8598;">提示：try "sync" / "snow" / "pattern" / "storm"</div>
+            </div>
+            <div class="t-input-row">
+                <span class="t-prompt">SNOW&gt;</span>
+                <input id="tInput" autocomplete="off" spellcheck="false" placeholder="_">
+            </div>
+        </div>
+
+        <!-- 底部 Tab 栏 -->
+        <div class="tab-bar" id="tabBar">
+            <div class="tab-item active" data-index="0">
+                <span class="icon"> ❄️</span>
+                <span>档案</span>
+            </div>
+            <div class="tab-item" data-index="1">
+                <span class="icon">📈</span>
+                <span>须知</span>
+                <span class="badge">3</span>
+            </div>
+            <div class="tab-item" data-index="2">
+                <span class="icon">🧩</span>
+                <span>话术</span>
+            </div>
+            <div class="tab-item" data-index="3">
+                <span class="icon">📮</span>
+                <span>板评</span>
+                <span class="badge">1</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ============ 开机动画 ============
+            const bootScreen = document.getElementById('bootScreen');
+            const bootTexts = [
+                'WINTER SYSTEM BOOTING...',
+                'FROST-1 ... OK',
+                'FLAKE-2 ... OK',
+                'SILENCE-3 ... OK',
+                'SNOWFIELD ... READY'
+            ];
+            let bootIdx = 0;
+            const bootTextEl = document.getElementById('bootText');
+            const bootTimer = setInterval(() => {
+                bootIdx++;
+                if (bootIdx < bootTexts.length) bootTextEl.textContent = bootTexts[bootIdx];
+            }, 380);
+            setTimeout(dismissBoot, 2200);
+            bootScreen.addEventListener('click', dismissBoot);
+            let booted = false;
+            function dismissBoot() {
+                if (booted) return;
+                booted = true;
+                clearInterval(bootTimer);
+                bootScreen.classList.add('hidden');
+                startTypewriter();
+                startSyncAnimation();
+            }
+
+            // ============ 打字机 ============
+            const typeTarget = document.getElementById('typeTarget');
+            const typeText = '你好，我是 Alex。喜欢安静地写代码，也喜欢把想法轻轻放进作品里。';
+            function startTypewriter() {
+                let i = 0;
+                const timer = setInterval(() => {
+                    i++;
+                    typeTarget.textContent = typeText.slice(0, i);
+                    if (i >= typeText.length) clearInterval(timer);
+                }, 70);
+            }
+
+            // ============ 合成音效引擎（柔和正弦，冬夜风） ============
+            const AudioFX = {
+                ctx: null,
+                muted: false,
+                ensure() {
+                    if (!this.ctx) {
+                        try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+                    }
+                    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+                },
+                tone(freq, dur, type, vol, when, slideTo) {
+                    if (this.muted || !this.ctx) return;
+                    const t0 = this.ctx.currentTime + (when || 0);
+                    const o = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    o.type = type || 'sine';
+                    o.frequency.setValueAtTime(freq, t0);
+                    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+                    g.gain.setValueAtTime(vol || 0.04, t0);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.start(t0); o.stop(t0 + dur + 0.05);
+                },
+                blip(i) { this.tone(420 + i * 80, 0.12, 'sine', 0.03); },
+                atfield() { this.tone(320, 0.6, 'sine', 0.03, 0, 720); },
+                storm() {
+                    for (let k = 0; k < 6; k++) {
+                        this.tone(160 + k * 30, 0.5, 'sine', 0.04, k * 0.35, 90 + k * 20);
+                    }
+                }
+            };
+
+            // ============ 滑动逻辑 ============
+            const slidesWrapper = document.getElementById('slidesWrapper');
+            const tabItems = document.querySelectorAll('.tab-item');
+            const dots = document.querySelectorAll('.indicator .dot');
+            const navTitle = document.getElementById('navTitle');
+            const contentSlider = document.getElementById('contentSlider');
+            const pageFlash = document.getElementById('pageFlash');
+
+            const titles = ['档案', '须知', '话术', '板评'];
+            const flashColors = [
+                'rgba(255,255,255,0.35)',
+                'rgba(85,160,180,0.14)',
+                'rgba(100,128,184,0.14)',
+                'rgba(139,159,201,0.15)'
+            ];
+
+            let currentIndex = 0;
+            const totalSlides = 4;
+            let startX = 0, startY = 0, isDragging = false, isHorizontal = null;
+
+            function updateUI(index) {
+                if (index < 0) index = 0;
+                if (index > totalSlides - 1) index = totalSlides - 1;
+                const changed = index !== currentIndex;
+                currentIndex = index;
+                slidesWrapper.style.transform = `translateX(${-index * 25}%)`;
+                navTitle.firstChild.textContent = titles[index];
+                dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+                tabItems.forEach((item, i) => item.classList.toggle('active', i === index));
+
+                if (changed && booted) {
+                    AudioFX.blip(index);
+                    pageFlash.style.setProperty('--flash-color', flashColors[index]);
+                    pageFlash.classList.remove('flash');
+                    void pageFlash.offsetHeight;
+                    pageFlash.classList.add('flash');
+                    const toast = document.getElementById('atToast');
+                    toast.textContent = index === 1 ? '能力谱读取中'
+                                     : index === 2 ? '作品集已展开'
+                                     : index === 3 ? '通讯频道已开启'
+                                     : 'FROST FIELD — FULL EXPANSION';
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 1200);
+                }
+
+                if (index === 1) { startSyncAnimation(); startMagiPanel(); }
+            }
+
+            tabItems.forEach((item, index) => {
+                item.addEventListener('click', () => updateUI(index));
+            });
+
+            // ============ 能力值动画 ============
+            function startSyncAnimation() {
+                document.querySelectorAll('.sync-fill').forEach(bar => {
+                    bar.style.width = '0';
+                    requestAnimationFrame(() => {
+                        setTimeout(() => { bar.style.width = bar.dataset.rate + '%'; }, 60);
+                    });
+                });
+                document.querySelectorAll('.sync-label .val').forEach(val => {
+                    const target = parseInt(val.dataset.rate, 10);
+                    let cur = 0;
+                    const step = Math.max(1, Math.round(target / 40));
+                    const timer = setInterval(() => {
+                        cur += step;
+                        if (cur >= target) { cur = target; clearInterval(timer); }
+                        val.textContent = cur + '%';
+                    }, 30);
+                });
+            }
+
+            // ============ 三重评估动画 ============
+            function startMagiPanel() {
+                const rows = document.querySelectorAll('.magi-row');
+                rows.forEach((row, i) => {
+                    row.classList.remove('in');
+                    setTimeout(() => row.classList.add('in'), 250 + i * 350);
+                });
+                document.querySelectorAll('.magi-row .pct').forEach((pct, i) => {
+                    const target = parseInt(pct.dataset.pct, 10);
+                    let cur = 0;
+                    pct.textContent = '0%';
+                    setTimeout(() => {
+                        const timer = setInterval(() => {
+                            cur += 2;
+                            if (cur >= target) { cur = target; clearInterval(timer); }
+                            pct.textContent = cur + '%';
+                        }, 35);
+                    }, 300 + i * 350);
+                });
+            }
+
+            // ============ 头像点击：冰环 + 暴风雪彩蛋 ============
+            let tapCounts = [0, 0, 0, 0];
+            const berserk = document.getElementById('berserk');
+            const atToast = document.getElementById('atToast');
+            document.querySelectorAll('.hex-avatar').forEach(avatar => {
+                avatar.addEventListener('click', () => {
+                    const ring = document.createElement('div');
+                    ring.className = 'atfield-ring pop';
+                    avatar.appendChild(ring);
+                    setTimeout(() => ring.remove(), 950);
+                    AudioFX.atfield();
+
+                    atToast.textContent = 'FROST FIELD — FULL EXPANSION';
+                    atToast.classList.add('show');
+                    setTimeout(() => atToast.classList.remove('show'), 1000);
+
+                    const page = parseInt(avatar.dataset.page, 10);
+                    tapCounts[page]++;
+                    if (tapCounts[page] >= 5) {
+                        tapCounts[page] = 0;
+                        triggerBerserk();
+                    }
+                    setTimeout(() => { tapCounts[page] = 0; }, 2500);
+                });
+            });
+
+            function triggerBerserk() {
+                berserk.classList.add('on');
+                document.querySelector('.phone-frame').classList.add('shake');
+                AudioFX.storm();
+                setTimeout(() => {
+                    berserk.classList.remove('on');
+                    document.querySelector('.phone-frame').classList.remove('shake');
+                }, 3000);
+            }
+
+            // ============ 心绪波形 ============
+            const canvas = document.getElementById('lclWave');
+            const ctx = canvas ? canvas.getContext('2d') : null;
+            let t = 0;
+            function drawWave() {
+                if (!ctx) return;
+                const w = canvas.width, h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = 'rgba(159,195,221,0.12)';
+                ctx.lineWidth = 1;
+                for (let x = 0; x < w; x += 32) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+                }
+                for (let y = 0; y < h; y += 27) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+                }
+                [[6, 'rgba(159,195,221,0.9)', 3.2], [10, 'rgba(255,255,255,0.4)', 2.1]].forEach(([speed, color, freq]) => {
+                    ctx.beginPath();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1.6;
+                    for (let x = 0; x <= w; x += 4) {
+                        const y = h / 2
+                            + Math.sin(x * freq / w * Math.PI * 2 + t * speed) * (h * 0.22)
+                            + Math.sin(x * 7 / w * Math.PI * 2 + t * speed * 1.7) * (h * 0.08);
+                        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                });
+                t += 0.05;
+                requestAnimationFrame(drawWave);
+            }
+            drawWave();
+
+            // ============ 飘雪（六臂冰晶 + 旋转 + 阵风 + 远近分层） ============
+            const snowCanvas = document.getElementById('snowCanvas');
+            const sctx = snowCanvas.getContext('2d');
+            let flakes = [];
+            let wind = 0;   // 全局阵风
+            let snowT = 0;
+
+            function resizeSnow() {
+                const frame = document.querySelector('.phone-frame');
+                snowCanvas.width = frame.offsetWidth;
+                snowCanvas.height = frame.offsetHeight;
+            }
+
+            function makeFlake(top) {
+                // 三层景深：远（小而慢很淡）/ 中 / 近（大而快较清晰）
+                const layer = Math.random();
+                const isCrystal = Math.random() < 0.3;   // 三成是完整六臂冰晶
+                return {
+                    x: Math.random() * snowCanvas.width,
+                    y: top ? -6 : Math.random() * snowCanvas.height,
+                    r: isCrystal ? 2.2 + Math.random() * 1.6
+                                 : 0.8 + layer * 1.6,
+                    s: (isCrystal ? 0.5 : 0.2 + layer * 0.5) + Math.random() * 0.3,
+                    a: isCrystal ? 0.7 : 0.2 + layer * 0.45,
+                    ph: Math.random() * Math.PI * 2,
+                    rot: Math.random() * Math.PI * 2,
+                    rs: (Math.random() - 0.5) * 0.02,     // 自转速度
+                    crystal: isCrystal
+                };
+            }
+
+            function initFlakes() {
+                flakes = [];
+                const n = Math.floor(snowCanvas.width / 6);
+                for (let i = 0; i < n; i++) flakes.push(makeFlake(false));
+            }
+
+            // 画一朵六臂冰晶
+            function drawCrystal(f) {
+                sctx.save();
+                sctx.translate(f.x, f.y);
+                sctx.rotate(f.rot);
+                sctx.strokeStyle = '#ffffff';
+                sctx.globalAlpha = f.a;
+                sctx.lineWidth = 1;
+                sctx.lineCap = 'round';
+                const R = f.r * 2.2;
+                for (let k = 0; k < 6; k++) {
+                    const ang = Math.PI / 3 * k;
+                    const cx = Math.cos(ang), cy = Math.sin(ang);
+                    sctx.beginPath();
+                    sctx.moveTo(0, 0);
+                    sctx.lineTo(cx * R, cy * R);
+                    const bx = cx * R * 0.55, by = cy * R * 0.55;
+                    for (const side of [-1, 1]) {
+                        const bang = ang + side * Math.PI / 4;
+                        sctx.moveTo(bx, by);
+                        sctx.lineTo(bx + Math.cos(bang) * R * 0.34, by + Math.sin(bang) * R * 0.34);
+                    }
+                    sctx.stroke();
+                }
+                sctx.restore();
+            }
+
+            function drawSnow() {
+                sctx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+                snowT += 0.016;
+                wind = Math.sin(snowT * 0.25) * 0.5 + Math.sin(snowT * 0.11) * 0.3; // 缓慢变化的阵风
+                flakes.forEach(f => {
+                    if (f.crystal) {
+                        f.rot += f.rs;
+                        drawCrystal(f);
+                    } else {
+                        sctx.globalAlpha = f.a;
+                        sctx.fillStyle = '#ffffff';
+                        sctx.beginPath();
+                        sctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+                        sctx.fill();
+                    }
+                    f.y += f.s * (1 + Math.abs(wind) * 0.15);
+                    f.x += Math.sin(snowT * 0.8 + f.ph) * 0.3 + wind * f.r * 0.4;
+                    if (f.y > snowCanvas.height + 6) { f.y = -6; f.x = Math.random() * snowCanvas.width; }
+                    if (f.x > snowCanvas.width + 8) f.x = -8;
+                    if (f.x < -8) f.x = snowCanvas.width + 8;
+                });
+                sctx.globalAlpha = 1;
+                requestAnimationFrame(drawSnow);
+            }
+            resizeSnow();
+            initFlakes();
+            drawSnow();
+            window.addEventListener('resize', () => { resizeSnow(); initFlakes(); });
+
+            // ============ 初雪倒计时 ============
+            const countdownEl = document.getElementById('angelCountdown');
+            const snowTarget = Date.now() + ((47 * 3600 + 13 * 60 + 21) * 1000);
+            function updateCountdown() {
+                let s = Math.max(0, Math.floor((snowTarget - Date.now()) / 1000));
+                const d = Math.floor(s / 86400); s %= 86400;
+                const hh = Math.floor(s / 3600); s %= 3600;
+                const mm = Math.floor(s / 60);
+                const ss = s % 60;
+                countdownEl.textContent = `T-${d}d ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+            }
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+
+            // ============ HUD 读数 ============
+            const hudReadout = document.getElementById('hudReadout');
+            setInterval(() => {
+                const x = Math.floor(Math.random() * 9000);
+                const y = Math.floor(Math.random() * 9000);
+                hudReadout.textContent = `X:${String(x).padStart(4,'0')} Y:${String(y).padStart(4,'0')} SNOW:OK`;
+            }, 1200);
+
+            // ============ 触摸滑动 ============
+            function handleTouchStart(e) {
+                const touch = e.touches[0];
+                startX = touch.clientX; startY = touch.clientY;
+                isDragging = true; isHorizontal = null;
+                slidesWrapper.style.transition = 'none';
+            }
+
+            function handleTouchMove(e) {
+                if (!isDragging) return;
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+                if (isHorizontal === null) {
+                    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 5) {
+                        isHorizontal = true; e.preventDefault();
+                    } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 5) {
+                        isHorizontal = false; return;
+                    } else return;
+                }
+                if (isHorizontal) {
+                    e.preventDefault();
+                    const basePercent = -currentIndex * 25;
+                    const containerWidth = contentSlider.offsetWidth;
+                    const deltaPercent = (deltaX / (containerWidth * 4)) * 100;
+                    let newPercent = basePercent + deltaPercent;
+                    const minPercent = -75, maxPercent = 0;
+                    if (newPercent > maxPercent) newPercent = maxPercent + (newPercent - maxPercent) * 0.3;
+                    else if (newPercent < minPercent) newPercent = minPercent + (newPercent - minPercent) * 0.3;
+                    slidesWrapper.style.transform = `translateX(${newPercent}%)`;
+                }
+            }
+
+            function handleTouchEnd(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                slidesWrapper.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                if (isHorizontal) {
+                    const touch = e.changedTouches[0];
+                    const deltaX = touch.clientX - startX;
+                    const threshold = Math.min(contentSlider.offsetWidth * 0.1, 60);
+                    let targetIndex = currentIndex;
+                    if (deltaX > threshold) targetIndex = currentIndex - 1;
+                    else if (deltaX < -threshold) targetIndex = currentIndex + 1;
+                    if (targetIndex < 0) targetIndex = 0;
+                    if (targetIndex >= totalSlides) targetIndex = totalSlides - 1;
+                    updateUI(targetIndex);
+                } else updateUI(currentIndex);
+                isHorizontal = null;
+            }
+
+            slidesWrapper.addEventListener('touchstart', handleTouchStart, { passive: false });
+            slidesWrapper.addEventListener('touchmove', handleTouchMove, { passive: false });
+            slidesWrapper.addEventListener('touchend', handleTouchEnd);
+            slidesWrapper.addEventListener('touchcancel', handleTouchEnd);
+            slidesWrapper.addEventListener('dragstart', (e) => e.preventDefault());
+
+            // ============ 鼠标模拟（PC） ============
+            let mouseStartX = 0, mouseStartY = 0, mouseDown = false, mouseHorizontal = null;
+
+            slidesWrapper.addEventListener('mousedown', (e) => {
+                mouseStartX = e.clientX; mouseStartY = e.clientY;
+                mouseDown = true; mouseHorizontal = null;
+                slidesWrapper.style.transition = 'none';
+                e.preventDefault();
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!mouseDown) return;
+                const deltaX = e.clientX - mouseStartX;
+                const deltaY = e.clientY - mouseStartY;
+                if (mouseHorizontal === null) {
+                    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 5) mouseHorizontal = true;
+                    else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 5) { mouseHorizontal = false; return; }
+                    else return;
+                }
+                if (mouseHorizontal) {
+                    e.preventDefault();
+                    const basePercent = -currentIndex * 25;
+                    const containerWidth = contentSlider.offsetWidth;
+                    const deltaPercent = (deltaX / (containerWidth * 4)) * 100;
+                    let newPercent = basePercent + deltaPercent;
+                    const minPercent = -75, maxPercent = 0;
+                    if (newPercent > maxPercent) newPercent = maxPercent + (newPercent - maxPercent) * 0.3;
+                    else if (newPercent < minPercent) newPercent = minPercent + (newPercent - minPercent) * 0.3;
+                    slidesWrapper.style.transform = `translateX(${newPercent}%)`;
+                }
+            });
+
+            window.addEventListener('mouseup', (e) => {
+                if (!mouseDown) return;
+                mouseDown = false;
+                slidesWrapper.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                if (mouseHorizontal) {
+                    const deltaX = e.clientX - mouseStartX;
+                    const threshold = Math.min(contentSlider.offsetWidth * 0.1, 60);
+                    let targetIndex = currentIndex;
+                    if (deltaX > threshold) targetIndex = currentIndex - 1;
+                    else if (deltaX < -threshold) targetIndex = currentIndex + 1;
+                    if (targetIndex < 0) targetIndex = 0;
+                    if (targetIndex >= totalSlides) targetIndex = totalSlides - 1;
+                    updateUI(targetIndex);
+                } else updateUI(currentIndex);
+                mouseHorizontal = null;
+            });
+
+            window.addEventListener('blur', () => {
+                if (mouseDown) {
+                    mouseDown = false;
+                    slidesWrapper.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    updateUI(currentIndex);
+                }
+            });
+
+            slidesWrapper.style.touchAction = 'pan-y';
+
+            window.addEventListener('resize', () => {
+                slidesWrapper.style.transition = 'none';
+                slidesWrapper.style.transform = `translateX(${-currentIndex * 25}%)`;
+                void slidesWrapper.offsetHeight;
+                slidesWrapper.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            });
+
+            // ============ 隐藏终端（冬夜控制台） ============
+            const terminal = document.getElementById('terminal');
+            const magiBtn = document.getElementById('magiBtn');
+            const tClose = document.getElementById('tClose');
+            const tBody = document.getElementById('tBody');
+            const tInput = document.getElementById('tInput');
+
+            function tPrint(line, color) {
+                const d = document.createElement('div');
+                d.className = 't-line';
+                if (color) d.style.color = color;
+                d.textContent = line;
+                tBody.appendChild(d);
+                tBody.scrollTop = tBody.scrollHeight;
+            }
+
+            function toggleTerminal(force) {
+                const open = force !== undefined ? force : !terminal.classList.contains('open');
+                terminal.classList.toggle('open', open);
+                if (open) setTimeout(() => tInput.focus(), 250);
+            }
+            magiBtn.addEventListener('click', () => toggleTerminal());
+            tClose.addEventListener('click', () => toggleTerminal(false));
+
+            const commands = {
+                help() {
+                    tPrint('可用指令：', '#9fc3dd');
+                    [['help', '本清单'], ['sync', '输出能力值'], ['snow', '初雪倒计时'],
+                     ['pattern', '降雪侦测'], ['contact', '通讯频道'],
+                     ['goto N', '跳转第 N 页 (1-4)'], ['storm', '■■■■■■'], ['clear', '清屏']]
+                        .forEach(([c, d]) => tPrint('  ' + c.padEnd(10) + '— ' + d));
+                },
+                sync() {
+                    [['FRONTEND', 92], ['BACKEND', 85], ['DEVOPS', 74], ['DESIGN', 80]].forEach(([n, v]) => {
+                        tPrint('  ' + n.padEnd(9) + ' ' + '▓'.repeat(Math.round(v / 5)) + ' ' + v + '%');
+                    });
+                },
+                snow() { tPrint('  初雪倒计时：' + countdownEl.textContent, '#9fc3dd'); },
+                pattern() {
+                    const snowy = Math.random() < 0.6;
+                    tPrint(snowy ? '  降雪侦测：正在下 · 很轻的那种' : '  降雪侦测：暂时停了 · 云还没走', snowy ? '#d7e8f4' : '#6d8598');
+                },
+                contact() {
+                    ['  📧 alex@example.com', '  🐙 GitHub: @alex-dev', '  💬 微信: alex_wechat'].forEach(l => tPrint(l));
+                },
+                storm() {
+                    tPrint('  风雪越来越大…', '#9fc3dd');
+                    setTimeout(triggerBerserk, 500);
+                },
+                clear() { tBody.innerHTML = ''; }
+            };
+
+            function exec(raw) {
+                tPrint('SNOW> ' + raw, '#6d8598');
+                const parts = raw.trim().toLowerCase().split(/\s+/);
+                const c = parts[0];
+                if (c === 'goto') {
+                    const n = parseInt(parts[1], 10);
+                    if (n >= 1 && n <= 4) { updateUI(n - 1); tPrint('  跳转至页面 ' + n + ' … OK', '#b8d4e8'); }
+                    else tPrint('  用法：goto 1..4', '#9fc3dd');
+                    return;
+                }
+                if (c === 'sudo') { tPrint('  权限不足：请先喝一杯热可可', '#9fc3dd'); return; }
+                if (commands[c]) { commands[c](); return; }
+                if (raw.trim()) tPrint('  COMMAND NOT RECOGNIZED — 输入 help 查看指令', '#c98a8a');
+            }
+
+            tInput.addEventListener('keydown', (e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') { exec(tInput.value); tInput.value = ''; }
+            });
+
+            // ============ 全局六边形点击波纹 ============
+            const frameEl = document.querySelector('.phone-frame');
+            document.querySelector('.content-slider').addEventListener('click', (e) => {
+                if (!booted) return;
+                const r = frameEl.getBoundingClientRect();
+                const rip = document.createElement('div');
+                rip.className = 'hex-ripple';
+                rip.style.left = (e.clientX - r.left - 24) + 'px';
+                rip.style.top = (e.clientY - r.top - 27) + 'px';
+                frameEl.appendChild(rip);
+                setTimeout(() => rip.remove(), 700);
+            });
+
+            // ============ 立绘 3D 视差（仅桌面端） ============
+            if (window.matchMedia('(pointer:fine)').matches) {
+                document.querySelectorAll('.hex-avatar').forEach(a => {
+                    a.addEventListener('mousemove', (e) => {
+                        const r = a.getBoundingClientRect();
+                        const dx = (e.clientX - r.left) / r.width - 0.5;
+                        const dy = (e.clientY - r.top) / r.height - 0.5;
+                        a.style.transform = `perspective(300px) rotateY(${dx * 14}deg) rotateX(${-dy * 14}deg)`;
+                    });
+                    a.addEventListener('mouseleave', () => { a.style.transform = ''; });
+                });
+            }
+
+            // ============ 心境随现实时间变化 ============
+            (function setPhase() {
+                const hr = new Date().getHours();
+                const phase = hr >= 5 && hr < 12 ? '晨雾未散'
+                            : hr < 18 ? '云层低垂'
+                            : hr < 23 ? '天色渐晚'
+                            : '万籁俱寂';
+                document.getElementById('pilotPhase').textContent = `全栈开发者 · ${phase} · 住在下雪的城市`;
+            })();
+
+            // ============ 音效开关与首次交互解锁 ============
+            const sndBtn = document.getElementById('sndBtn');
+            sndBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                AudioFX.ensure();
+                AudioFX.muted = !AudioFX.muted;
+                sndBtn.textContent = AudioFX.muted ? '🔇' : '🔊';
+            });
+            ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => AudioFX.ensure()));
+
+            // ============ 板评雪人轮播（向左滑动） ============
+            const boardTrack = document.getElementById('boardTrack');
+            const boardDots = document.querySelectorAll('#boardDots .bdot');
+            const boardTotal = boardTrack.children.length;
+            let boardIdx = 0;
+            setInterval(() => {
+                if (currentIndex !== 3) return;   // 只在板评页自动播放
+                boardIdx = (boardIdx + 1) % boardTotal;
+                boardTrack.style.transform = `translateX(-${boardIdx * 100}%)`;
+                boardDots.forEach((d, i) => d.classList.toggle('active', i === boardIdx));
+            }, 3000);
+
+            updateUI(0);
+        })();
+    </script>
+</body>
+</html>
