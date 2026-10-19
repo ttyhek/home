@@ -17,7 +17,6 @@
             --c-text-muted: #8ba5c2;
             --c-border: rgba(180, 210, 240, 0.6);
             --c-action-bg: rgba(235, 245, 255, 0.7);
-            --c-action-hover: rgba(210, 235, 255, 0.9);
             --shadow-sm: 0 2px 8px -2px rgba(30, 58, 95, 0.05);
             --shadow-md: 0 8px 24px -8px rgba(30, 58, 95, 0.12);
             --radius-card: 20px;
@@ -37,17 +36,27 @@
         }
 
         .homepage {
-            max-width: 640px; width: 100%; background: var(--c-surface);
+            max-width: 100%; width: 100%;
+            background: var(--c-surface);
             min-height: 100vh; position: relative;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.02);
             border-left: 1px solid rgba(0, 0, 0, 0.03);
             border-right: 1px solid rgba(0, 0, 0, 0.03);
         }
 
+        /* PC 端限制最大宽度居中 */
+        @media (min-width: 641px) {
+            .homepage {
+                max-width: 640px;
+                border-radius: 0 0 20px 20px;
+                margin-top: 20px;
+            }
+        }
+
         /* 顶部导航 */
         .navbar {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 16px 24px; background: rgba(255, 255, 255, 0.9);
+            padding: 16px 20px; background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px); border-bottom: 1px solid var(--c-border);
             position: sticky; top: 0; z-index: 20;
         }
@@ -59,7 +68,7 @@
             border-radius: 12px; font-size: 1rem; transform: rotate(-3deg);
         }
 
-        .nav-actions { display: flex; align-items: center; gap: 16px; }
+        .nav-actions { display: flex; align-items: center; gap: 12px; }
         
         .mode-toggle {
             display: flex; background: rgba(107, 155, 210, 0.1);
@@ -67,7 +76,7 @@
             border: 1px solid rgba(107, 155, 210, 0.2);
         }
         .mode-btn {
-            padding: 6px 14px; border-radius: 16px; font-size: 0.8rem;
+            padding: 5px 12px; border-radius: 16px; font-size: 0.75rem;
             font-weight: 600; color: var(--c-text-sub); transition: all 0.2s;
         }
         .mode-btn.active {
@@ -77,7 +86,7 @@
 
         /* 封面背景 */
         .profile-cover {
-            height: 180px;
+            height: 150px;
             background: #e2e8f0;
             position: relative; 
             background-size: contain; 
@@ -86,35 +95,35 @@
             transition: all 0.2s;
         }
         .profile-cover::after {
-            content: "✦ ✧"; position: absolute; top: 20px; right: 30px;
-            font-size: 1.5rem; color: rgba(255, 255, 255, 0.7); letter-spacing: 10px;
+            content: "✦ ✧"; position: absolute; top: 15px; right: 20px;
+            font-size: 1.2rem; color: rgba(255, 255, 255, 0.7); letter-spacing: 8px;
             pointer-events: none; text-shadow: 0 0 4px rgba(0,0,0,0.2);
         }
         .cover-edit-overlay {
             position: absolute; inset: 0; background: rgba(0,0,0,0.4);
             color: white; display: none; align-items: center; justify-content: center;
             font-weight: 600; cursor: pointer; z-index: 1;
+            font-size: 0.9rem;
         }
-        .cover-edit-overlay i { font-size: 2rem; margin-right: 10px; }
+        .cover-edit-overlay i { font-size: 1.5rem; margin-right: 8px; }
         body.edit-mode .profile-cover:hover .cover-edit-overlay { display: flex; }
 
-        /* 头像区域（改为自适应图片） */
+        /* 头像区域 */
         .profile-header {
-            padding: 0 24px; display: flex; align-items: flex-end;
-            margin-top: -54px; position: relative; z-index: 5;
+            padding: 0 20px; display: flex; align-items: flex-end;
+            margin-top: -45px; position: relative; z-index: 5;
         }
 
         .avatar-wrapper {
-            position: relative; margin-right: 20px; flex-shrink: 0;
+            position: relative; margin-right: 16px; flex-shrink: 0;
         }
-        /* 去掉死板高度，让内部图片撑开 */
         .avatar {
-            width: 108px; height: 108px; border-radius: 50%;
-            border: 4px solid #fff;
-            box-shadow: 0 12px 24px -8px rgba(30, 58, 95, 0.3), 0 0 0 4px rgba(200, 230, 255, 0.5);
+            width: 90px; height: 90px; border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 8px 20px -6px rgba(30, 58, 95, 0.3), 0 0 0 3px rgba(200, 230, 255, 0.5);
             background-color: #cce0f5;
             background-image: radial-gradient(circle at 50% 0%, #b8dcfc 0%, #6b9bd2 100%);
-            background-size: cover; /* 修改为 cover 填满圆形 */
+            background-size: cover; 
             background-position: center;
             background-repeat: no-repeat;
             position: relative;
@@ -126,41 +135,41 @@
         }
         .avatar::after {
             content: "✦"; position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
-            font-size: 2rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.8);
+            font-size: 1.5rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.8);
         }
-        .avatar.has-img::after { display: none; } /* 有图时隐藏星星 */
+        .avatar.has-img::after { display: none; }
         .avatar.has-img img { display: block; }
 
         .avatar-edit-overlay {
             position: absolute; inset: 0; border-radius: 50%;
             background: rgba(0,0,0,0.4); color: white;
             display: none; align-items: center; justify-content: center;
-            font-size: 1.5rem; cursor: pointer; z-index: 10;
+            font-size: 1.2rem; cursor: pointer; z-index: 10;
         }
         body.edit-mode .avatar-wrapper:hover .avatar-edit-overlay { display: flex; }
 
-        .profile-stats { display: flex; gap: 16px; margin-left: auto; padding-bottom: 12px; }
+        .profile-stats { display: flex; gap: 10px; margin-left: auto; padding-bottom: 8px; }
         .stat-item {
             display: flex; flex-direction: column; align-items: center;
-            background: rgba(255, 255, 255, 0.8); padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.8); padding: 6px 12px;
             border-radius: var(--radius-pill); border: 1px solid #fff;
         }
-        .stat-number { font-weight: 800; font-size: 1.15rem; }
-        .stat-label { color: var(--c-text-muted); font-size: 0.7rem; font-weight: 600; }
+        .stat-number { font-weight: 800; font-size: 1rem; }
+        .stat-label { color: var(--c-text-muted); font-size: 0.65rem; font-weight: 600; }
 
         /* 用户信息 */
-        .user-info { padding: 16px 24px 20px; }
-        .display-name { font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 8px; outline: none; border-radius: 8px; padding: 2px 8px; margin-left: -8px; transition: background 0.2s; }
-        .username { color: var(--c-text-sub); font-size: 0.95rem; margin-top: 4px; outline: none; border-radius: 8px; padding: 2px 8px; margin-left: -8px; display: inline-block; transition: background 0.2s; }
+        .user-info { padding: 14px 20px 16px; }
+        .display-name { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 6px; outline: none; border-radius: 8px; padding: 2px 6px; margin-left: -6px; transition: background 0.2s; }
+        .username { color: var(--c-text-sub); font-size: 0.85rem; margin-top: 4px; outline: none; border-radius: 8px; padding: 2px 6px; margin-left: -6px; display: inline-block; transition: background 0.2s; }
         
         .bio {
-            margin-top: 16px; font-size: 0.95rem; line-height: 1.6;
+            margin-top: 12px; font-size: 0.85rem; line-height: 1.5;
             background: linear-gradient(to right, rgba(240, 248, 255, 0.8), rgba(240, 248, 255, 0.4));
-            padding: 14px 18px; border-radius: 16px; border-left: 4px solid var(--c-primary);
-            display: flex; flex-wrap: wrap; gap: 12px 20px; outline: none; transition: background 0.2s;
+            padding: 12px 14px; border-radius: 14px; border-left: 3px solid var(--c-primary);
+            display: flex; flex-wrap: wrap; gap: 10px 16px; outline: none; transition: background 0.2s;
         }
-        .bio span { display: flex; align-items: center; gap: 6px; font-weight: 500; outline: none; }
-        .join-date { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: var(--c-text-sub); outline: none; }
+        .bio span { display: flex; align-items: center; gap: 5px; font-weight: 500; outline: none; }
+        .join-date { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.75rem; color: var(--c-text-sub); outline: none; }
 
         /* 编辑模式高亮 */
         body.edit-mode .display-name,
@@ -175,27 +184,32 @@
             cursor: text;
         }
 
-        /* 标签页 */
+        /* 标签页 (可滑动) */
         .profile-tabs {
-            display: flex; border-bottom: 1px solid var(--c-border); padding: 0 24px;
-            gap: 8px; overflow-x: auto; scrollbar-width: none;
-            background: rgba(255, 255, 255, 0.8); position: sticky; top: 66px; z-index: 15; backdrop-filter: blur(8px);
+            display: flex; border-bottom: 1px solid var(--c-border); padding: 0 16px;
+            gap: 4px; overflow-x: auto; scrollbar-width: none;
+            background: rgba(255, 255, 255, 0.8); position: sticky; top: 60px; z-index: 15; backdrop-filter: blur(8px);
+            -webkit-overflow-scrolling: touch;
         }
         .profile-tabs::-webkit-scrollbar { display: none; }
-        .tab { padding: 16px 12px 14px; font-weight: 700; font-size: 0.95rem; color: var(--c-text-sub); border-bottom: 3px solid transparent; cursor: pointer; flex-shrink: 0; }
+        .tab { 
+            padding: 14px 10px 12px; font-weight: 700; font-size: 0.85rem; 
+            color: var(--c-text-sub); border-bottom: 3px solid transparent; 
+            cursor: pointer; flex-shrink: 0; white-space: nowrap;
+        }
         .tab.active { color: var(--c-primary-dark); border-bottom-color: var(--c-primary-dark); font-weight: 800; }
 
         .tab-panel { display: none; animation: panelFadeIn 0.4s ease; }
         .tab-panel.active { display: block; }
         @keyframes panelFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .panel-scroll { padding: 20px 24px 40px; }
+        .panel-scroll { padding: 16px 16px 30px; }
 
         /* 帖子基础 */
-        .post { padding: 24px; border-bottom: 1px solid var(--c-border); display: flex; gap: 16px; position: relative; }
+        .post { padding: 16px; border-bottom: 1px solid var(--c-border); display: flex; gap: 12px; position: relative; }
         
         .post-avatar {
-            width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; border: 2px solid #fff;
+            width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; border: 2px solid #fff;
             background-color: #cce0f5;
             background-image: radial-gradient(circle at 50% 0%, #b8dcfc 0%, #6b9bd2 100%);
             background-size: cover; 
@@ -208,23 +222,23 @@
         .post-avatar img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .post-avatar::after {
             content: "✦"; position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
-            font-size: 1rem; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.8);
+            font-size: 0.8rem; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.8);
         }
         .post-avatar.has-img::after { display: none; }
         .post-avatar.has-img img { display: block; }
 
         .post-content { flex: 1; min-width: 0; position: relative; }
-        .post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-        .post-name { font-weight: 800; font-size: 1rem; outline: none; border-radius: 4px; padding: 0 4px; margin-left: -4px; }
-        .post-username { color: var(--c-text-sub); font-size: 0.8rem; background: rgba(235, 245, 255, 0.8); padding: 2px 10px; border-radius: var(--radius-pill); }
-        .post-time { color: var(--c-text-muted); font-size: 0.8rem; margin-left: auto; }
-        .post-text { font-size: 0.95rem; line-height: 1.7; margin-bottom: 16px; outline: none; border-radius: 8px; padding: 6px; margin-left: -6px; }
-        .post-actions { display: flex; gap: 20px; }
+        .post-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+        .post-name { font-weight: 800; font-size: 0.9rem; outline: none; border-radius: 4px; padding: 0 4px; margin-left: -4px; }
+        .post-username { color: var(--c-text-sub); font-size: 0.7rem; background: rgba(235, 245, 255, 0.8); padding: 2px 8px; border-radius: var(--radius-pill); }
+        .post-time { color: var(--c-text-muted); font-size: 0.7rem; margin-left: auto; }
+        .post-text { font-size: 0.85rem; line-height: 1.6; margin-bottom: 12px; outline: none; border-radius: 8px; padding: 6px; margin-left: -6px; }
+        .post-actions { display: flex; gap: 16px; }
 
         /* 全局编辑按钮 */
         .global-edit-btn {
-            position: absolute; top: 20px; right: 24px;
-            display: none; width: 32px; height: 32px;
+            position: absolute; top: 16px; right: 16px;
+            display: none; width: 28px; height: 28px;
             background: var(--c-action-bg); color: var(--c-primary);
             border-radius: 50%; align-items: center; justify-content: center;
             cursor: pointer; border: 1px solid var(--c-primary-light); z-index: 10;
@@ -232,79 +246,54 @@
         body.edit-mode .global-edit-btn { display: flex; }
 
         /* 须知板块 */
-        .accordion-item { background: #fff; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--c-border); overflow: hidden; }
-        .accordion-header { display: flex; align-items: center; gap: 14px; padding: 18px 20px; cursor: pointer; background: rgba(250, 253, 255, 0.9); }
-        .accordion-icon { width: 36px; height: 36px; border-radius: 12px; background: rgba(107, 155, 210, 0.1); color: var(--c-primary); display: flex; align-items: center; justify-content: center; }
-        .accordion-title { font-weight: 700; font-size: 1rem; flex: 1; }
-        .accordion-arrow { color: var(--c-text-muted); transition: transform 0.3s; }
+        .accordion-item { background: #fff; border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--c-border); overflow: hidden; }
+        .accordion-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; background: rgba(250, 253, 255, 0.9); }
+        .accordion-icon { width: 30px; height: 30px; border-radius: 10px; background: rgba(107, 155, 210, 0.1); color: var(--c-primary); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+        .accordion-title { font-weight: 700; font-size: 0.9rem; flex: 1; }
+        .accordion-arrow { color: var(--c-text-muted); transition: transform 0.3s; font-size: 0.8rem; }
         .accordion-item.active .accordion-arrow { transform: rotate(180deg); }
         
-        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s; padding: 0 20px; background: #fff; }
-        .accordion-item.active .accordion-body { max-height: 600px; padding: 0 20px 20px; }
+        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s; padding: 0 16px; background: #fff; }
+        .accordion-item.active .accordion-body { max-height: 500px; padding: 0 16px 16px; }
         
         .accordion-desc { 
-            font-size: 0.9rem; color: var(--c-text-sub); line-height: 1.7; 
-            border-top: 1px dashed var(--c-border); padding-top: 16px; outline: none;
-            max-height: 250px; overflow-y: auto; padding-right: 8px;
+            font-size: 0.85rem; color: var(--c-text-sub); line-height: 1.6; 
+            border-top: 1px dashed var(--c-border); padding-top: 12px; outline: none;
+            max-height: 200px; overflow-y: auto; padding-right: 6px;
         }
 
-        .accordion-desc::-webkit-scrollbar { width: 6px; }
+        .accordion-desc::-webkit-scrollbar { width: 4px; }
         .accordion-desc::-webkit-scrollbar-track { background: transparent; }
         .accordion-desc::-webkit-scrollbar-thumb { background: var(--c-primary-light); border-radius: 10px; }
 
-        body.edit-mode .accordion-desc { background: #f8fbff; border-radius: 8px; padding: 12px; border: 1px solid var(--c-primary-light); }
+        body.edit-mode .accordion-desc { background: #f8fbff; border-radius: 8px; padding: 10px; border: 1px solid var(--c-primary-light); }
 
-        /* ===== 日常首帖图片（改为自适应图片） ===== */
-        .post-image {
-            border-radius: 16px; margin-bottom: 16px;
-            background-size: contain !important;
-            background-position: center; background-repeat: no-repeat;
-            background-color: #eef2f6;
-            position: relative;
-            width: 100%;
-            /* 移除强制高度，让内部 img 撑开 */
-            display: flex; align-items: center; justify-content: center;
-            overflow: hidden;
-            min-height: 120px;
-        }
-        .post-image img {
-            width: 100%; height: auto; display: none; object-fit: contain;
-        }
-        .post-image.has-img { background-color: transparent; min-height: 0; }
-        .post-image.has-img img { display: block; }
-        .post-image .img-placeholder {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--c-primary-dark); font-weight: 600; padding: 40px 20px;
-            pointer-events: none;
-        }
-        .post-image.has-img .img-placeholder { display: none; }
-
-        /* ===== 后四版块：图文帖子动态流 ===== */
+        /* ===== 自适应图文流 ===== */
         .design-post {
-            background: #fff; border-radius: var(--radius-card); padding: 20px; 
-            margin-bottom: 20px; box-shadow: var(--shadow-md); position: relative;
-            display: flex; flex-direction: column; gap: 16px;
+            background: #fff; border-radius: var(--radius-card); padding: 16px; 
+            margin-bottom: 16px; box-shadow: var(--shadow-md); position: relative;
+            display: flex; flex-direction: column; gap: 12px;
         }
 
         .feed-item {
-            display: flex; flex-direction: column; gap: 12px;
-            padding-bottom: 16px; border-bottom: 1px dashed var(--c-border);
+            display: flex; flex-direction: column; gap: 10px;
+            padding-bottom: 12px; border-bottom: 1px dashed var(--c-border);
         }
         .feed-item:last-child { border-bottom: none; padding-bottom: 0; }
 
         .feed-text {
-            font-size: 0.95rem; line-height: 1.6; color: var(--c-text-main);
+            font-size: 0.85rem; line-height: 1.6; color: var(--c-text-main);
             outline: none; padding: 4px; border-radius: 4px;
         }
 
         .feed-image-wrapper {
             width: 100%;
-            border-radius: 12px;
+            border-radius: 10px;
             background-color: #f0f4f8;
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            min-height: 100px;
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -315,57 +304,75 @@
             height: auto;
             display: block;
             object-fit: contain;
+            /* 手机端限制图片最大高度，避免超长图片 */
+            max-height: 400px; 
         }
 
         /* 占位提示 */
         .img-placeholder {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 40px 20px; color: var(--c-primary-dark); font-weight: 600;
-            pointer-events: none;
+            padding: 30px 16px; color: var(--c-primary-dark); font-weight: 600;
+            pointer-events: none; font-size: 0.85rem;
         }
-        .img-placeholder i { font-size: 2rem; margin-bottom: 8px; }
+        .img-placeholder i { font-size: 1.5rem; margin-bottom: 6px; }
 
         /* 添加按钮容器 */
         .add-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 10px;
+            display: none; 
+            gap: 10px;
+            margin-top: 8px;
         }
+        body.edit-mode .add-actions { display: flex; }
         
         .add-new-feed-btn {
             flex: 1;
             display: flex; align-items: center; justify-content: center; flex-direction: column;
-            padding: 16px;
+            padding: 12px;
             background: rgba(245, 249, 255, 0.6);
             border: 2px dashed var(--c-primary-light);
-            border-radius: 16px; color: var(--c-primary-dark);
+            border-radius: 12px; color: var(--c-primary-dark);
             font-weight: 700; cursor: pointer; transition: background 0.2s;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         .add-new-feed-btn:hover { background: rgba(220, 235, 255, 0.9); }
-        .add-new-feed-btn i { font-size: 1.5rem; margin-bottom: 8px; }
+        .add-new-feed-btn i { font-size: 1.2rem; margin-bottom: 6px; }
 
         .delete-feed-btn {
-            display: none; /* 默认隐藏 */
-            color: #ef4444; font-size: 0.8rem; cursor: pointer; 
+            display: none;
+            color: #ef4444; font-size: 0.75rem; cursor: pointer; 
             text-align: right; padding: 4px; font-weight: 600;
         }
-        body.edit-mode .delete-feed-btn { display: block; } /* 仅编辑模式可见 */
+        body.edit-mode .delete-feed-btn { display: block; }
 
         /* 图片上传遮罩 */
         .img-edit-overlay {
             position: absolute; inset: 0; border-radius: inherit;
             background: rgba(0,0,0,0.4); color: white;
             display: none; align-items: center; justify-content: center; flex-direction: column;
-            cursor: pointer; z-index: 10; font-weight: 600;
+            cursor: pointer; z-index: 10; font-weight: 600; font-size: 0.85rem;
         }
         body.edit-mode .post-image:hover .img-edit-overlay,
         body.edit-mode .feed-image-wrapper:hover .img-edit-overlay { display: flex; }
-        .img-edit-overlay i { font-size: 2rem; margin-bottom: 8px; }
+        .img-edit-overlay i { font-size: 1.5rem; margin-bottom: 6px; }
 
-        .end-note { text-align: center; padding: 30px 0 50px; color: var(--c-text-muted); font-size: 0.8rem; }
+        /* 日常页动态图文流覆盖样式 */
+        #feed-post-1 .feed-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--c-border);
+        }
+        #feed-post-1 .feed-item:last-child {
+            border-bottom: none;
+        }
+        #feed-post-1 .feed-image-wrapper {
+            border-radius: 12px;
+        }
+        #feed-post-1 .add-actions {
+            padding: 0 16px 16px;
+        }
 
-        /* 弹窗 */
+        .end-note { text-align: center; padding: 20px 0 40px; color: var(--c-text-muted); font-size: 0.75rem; }
+
+        /* 弹窗适配 */
         .pwd-overlay {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center;
@@ -373,24 +380,95 @@
         }
         .pwd-overlay.active { display: flex; opacity: 1; }
         .pwd-card {
-            background: #fff; padding: 28px 24px; border-radius: 20px; width: 90%; max-width: 320px;
+            background: #fff; padding: 24px 20px; border-radius: 20px; width: 90%; max-width: 320px;
             text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             transform: translateY(20px); transition: transform 0.3s;
         }
         .pwd-overlay.active .pwd-card { transform: translateY(0); }
-        .pwd-icon { font-size: 2rem; color: var(--c-primary); margin-bottom: 12px; }
-        .pwd-title { font-weight: 800; font-size: 1.1rem; margin-bottom: 8px; }
-        .pwd-desc { font-size: 0.85rem; color: var(--c-text-sub); margin-bottom: 20px; }
-        .pwd-input { width: 100%; padding: 12px; border: 2px solid var(--c-border); border-radius: 12px; font-size: 1.1rem; text-align: center; letter-spacing: 4px; outline: none; margin-bottom: 16px; }
-        .pwd-actions { display: flex; gap: 12px; }
-        .pwd-btn { flex: 1; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; }
+        .pwd-icon { font-size: 1.8rem; color: var(--c-primary); margin-bottom: 10px; }
+        .pwd-title { font-weight: 800; font-size: 1rem; margin-bottom: 6px; }
+        .pwd-desc { font-size: 0.8rem; color: var(--c-text-sub); margin-bottom: 16px; }
+        .pwd-input { width: 100%; padding: 10px; border: 2px solid var(--c-border); border-radius: 10px; font-size: 1rem; text-align: center; letter-spacing: 4px; outline: none; margin-bottom: 14px; }
+        .pwd-actions { display: flex; gap: 10px; }
+        .pwd-btn { flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 0.85rem; }
         .pwd-btn-cancel { background: #f1f5f9; color: var(--c-text-sub); }
         .pwd-btn-confirm { background: var(--c-primary); color: #fff; }
-        .pwd-error { color: #ef4444; font-size: 0.8rem; margin-top: 8px; display: none; }
+        .pwd-error { color: #ef4444; font-size: 0.75rem; margin-top: 6px; display: none; }
         .pwd-error.show { display: block; animation: shake 0.3s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
         .hidden-file { display: none; }
+
+        /* 手机端专门适配 */
+        @media (max-width: 500px) {
+            .navbar { padding: 12px 16px; }
+            .profile-cover { height: 120px; }
+            .profile-header { padding: 0 16px; margin-top: -40px; }
+            .avatar { width: 80px; height: 80px; }
+            .profile-stats { gap: 8px; padding-bottom: 6px; }
+            .stat-item { padding: 4px 10px; }
+            .stat-number { font-size: 0.9rem; }
+            .stat-label { font-size: 0.6rem; }
+            .user-info { padding: 12px 16px 14px; }
+            .display-name { font-size: 1.3rem; }
+            .username { font-size: 0.8rem; }
+            .bio { font-size: 0.8rem; gap: 8px 12px; padding: 10px 12px; }
+            .join-date { gap: 8px; font-size: 0.7rem; margin-top: 8px; }
+            
+            /* 标签页紧凑 */
+            .profile-tabs { padding: 0 12px; top: 56px; }
+            .tab { padding: 12px 8px 10px; font-size: 0.8rem; }
+            
+            .panel-scroll { padding: 12px 12px 30px; }
+            .post { padding: 12px; gap: 10px; }
+            .post-avatar { width: 38px; height: 38px; }
+            .post-name { font-size: 0.85rem; }
+            .post-username { font-size: 0.65rem; padding: 1px 6px; }
+            .post-time { font-size: 0.65rem; }
+            .post-text { font-size: 0.8rem; margin-bottom: 10px; }
+            .post-actions { gap: 12px; }
+            
+            .accordion-header { padding: 12px; gap: 10px; }
+            .accordion-icon { width: 26px; height: 26px; font-size: 0.8rem; }
+            .accordion-title { font-size: 0.85rem; }
+            .accordion-body { padding: 0 12px; }
+            .accordion-item.active .accordion-body { padding: 0 12px 12px; }
+            .accordion-desc { font-size: 0.8rem; padding-top: 10px; }
+            
+            .design-post { padding: 12px; margin-bottom: 12px; gap: 10px; }
+            .feed-item { gap: 8px; padding-bottom: 10px; }
+            .feed-text { font-size: 0.8rem; }
+            .feed-image-wrapper { border-radius: 8px; }
+            .feed-image-wrapper img { max-height: 300px; }
+            
+            .add-actions { gap: 8px; margin-top: 6px; }
+            .add-new-feed-btn { padding: 10px; font-size: 0.75rem; }
+            .add-new-feed-btn i { font-size: 1rem; margin-bottom: 4px; }
+            .delete-feed-btn { font-size: 0.7rem; padding: 2px; }
+
+            #feed-post-1 .feed-item { padding: 12px; }
+            #feed-post-1 .add-actions { padding: 0 12px 12px; }
+
+            .end-note { font-size: 0.7rem; padding: 16px 0 30px; }
+            
+            .pwd-card { padding: 20px 16px; }
+            .pwd-icon { font-size: 1.5rem; }
+            .pwd-title { font-size: 0.95rem; }
+            .pwd-input { font-size: 0.9rem; padding: 8px; }
+            .pwd-btn { font-size: 0.8rem; padding: 8px; }
+        }
+
+        /* 极小屏幕 (宽度小于360px) */
+        @media (max-width: 360px) {
+            .display-name { font-size: 1.1rem; }
+            .profile-stats { gap: 4px; }
+            .stat-item { padding: 4px 6px; }
+            .stat-number { font-size: 0.8rem; }
+            .stat-label { font-size: 0.55rem; }
+            .tab { font-size: 0.75rem; padding: 10px 6px; }
+            .post-name { font-size: 0.8rem; }
+            .post-text { font-size: 0.75rem; }
+        }
     </style>
 </head>
 <body>
@@ -415,7 +493,6 @@
         
         <div class="profile-header">
             <div class="avatar-wrapper" id="avatarWrapper">
-                <!-- 头像改为了 img 标签以自适应 -->
                 <div class="avatar" id="mainAvatar">
                     <img id="mainAvatarImg" src="" alt="">
                 </div>
@@ -459,51 +536,7 @@
             <!-- 日常面板 -->
             <div class="tab-panel active" id="tab1">
                 <div class="panel-scroll" style="padding: 0;">
-                    <div class="post" id="post-1">
-                        <div class="post-avatar" id="postAvatar1"><img id="postAvatar1Img" src="" alt=""></div>
-                        <div class="post-content">
-                            <div class="global-edit-btn" onclick="openEditModal('post-1')"><i class="fas fa-pencil-alt"></i></div>
-                            <div class="post-header">
-                                <span class="post-name" contenteditable="false">琥珀</span>
-                                <span class="post-username sync-username">@amber_starry</span>
-                                <span class="post-time">· 刚刚</span>
-                            </div>
-                            <div class="post-text" id="text-post-1" contenteditable="false">
-                                我拍下这张照片的时候，你还在我身边。现在照片还在，你走了。原来有些画面，从一开始就是用来怀念的。🖤
-                            </div>
-                            <!-- 日常首帖图片改为了 img 标签以自适应 -->
-                            <div class="post-image" id="img-post-1">
-                                <div class="img-placeholder"><i class="fas fa-camera"></i>点击上传配图</div>
-                                <img id="img-post-1-tag" src="" alt="">
-                                <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-1', 'amber_img_post-1')">
-                                    <i class="fas fa-image"></i> 点击替换配图
-                                </div>
-                            </div>
-                            <div class="post-actions">
-                                <div class="action"><i class="far fa-heart"></i> 128</div>
-                                <div class="action"><i class="far fa-comment"></i> 24</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="post" id="post-2">
-                        <div class="post-avatar" id="postAvatar2"><img id="postAvatar2Img" src="" alt=""></div>
-                        <div class="post-content">
-                            <div class="global-edit-btn" onclick="openEditModal('post-2')"><i class="fas fa-pencil-alt"></i></div>
-                            <div class="post-header">
-                                <span class="post-name" contenteditable="false">琥珀</span>
-                                <span class="post-username sync-username">@amber_starry</span>
-                                <span class="post-time">· 昨天</span>
-                            </div>
-                            <div class="post-text" id="text-post-2" contenteditable="false">
-                                你走之后，我学会了在凌晨三点给自己煮面，加两个荷包蛋，一个给你留着，凉了再倒掉。这个习惯，我改了很久都没改掉。
-                            </div>
-                            <div class="post-actions">
-                                <div class="action liked"><i class="fas fa-heart"></i> 256</div>
-                                <div class="action"><i class="far fa-comment"></i> 42</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="design-post" id="feed-post-1" style="padding: 0; box-shadow: none; background: transparent; border: none;"></div>
                 </div>
             </div>
 
@@ -591,27 +624,11 @@
         </div>
     </div>
 
-    <!-- 帖子文字编辑弹窗 -->
-    <div class="pwd-overlay" id="editPostOverlay">
-        <div class="pwd-card" style="max-width: 380px; text-align: left;">
-            <div class="pwd-title" style="text-align: center; margin-bottom: 20px;">编辑帖子内容</div>
-            <div style="margin-bottom: 16px;">
-                <label style="font-size: 0.85rem; font-weight: 600; color: var(--c-text-sub); display: block; margin-bottom: 8px;">文案内容</label>
-                <textarea id="editPostTextArea" rows="4" style="width: 100%; padding: 10px; border: 1px solid var(--c-border); border-radius: 8px; font-size: 0.95rem; outline: none; resize: none; font-family: inherit;"></textarea>
-            </div>
-            <div class="pwd-actions">
-                <button class="pwd-btn pwd-btn-cancel" onclick="document.getElementById('editPostOverlay').classList.remove('active')">取消</button>
-                <button class="pwd-btn pwd-btn-confirm" onclick="savePostEdit()">保存修改</button>
-            </div>
-        </div>
-    </div>
-
     <!-- 全局图片上传组件 -->
     <input type="file" id="globalImgInput" accept="image/*" class="hidden-file">
     
     <script>
         (function() {
-            let currentEditPostId = null;
             let currentUploadTargetId = null;
             let currentUploadStorageKey = null;
             
@@ -626,7 +643,6 @@
             }
 
             // ================= 数据存储结构 (图文帖子) =================
-            // 结构：amber_feeds_{postId} = [ { type: 'text-img', text: '文案', img: 'base64' }, { type: 'img', img: 'base64' }, ... ]
             function getFeedsData(postId) {
                 const data = localStorage.getItem('amber_feeds_' + postId);
                 return data ? JSON.parse(data) : null;
@@ -639,40 +655,41 @@
                 }
             }
 
+            // ================= 数据初始化兼容 =================
+            function ensureDefaultData(postId, defaultData) {
+                let feedsData = getFeedsData(postId);
+                if (feedsData) return feedsData;
+
+                // 特殊处理：日常页（feed-post-1）
+                if (postId === 'feed-post-1') {
+                    const oldText1 = localStorage.getItem('amber_text_post-1');
+                    const oldText2 = localStorage.getItem('amber_text_post-2');
+                    const oldImg1 = localStorage.getItem('amber_img_post-1');
+                    
+                    const migrated = [
+                        { type: 'text-img', text: oldText1 || '我拍下这张照片的时候，你还在我身边。现在照片还在，你走了。原来有些画面，从一开始就是用来怀念的。🖤', img: oldImg1 || '' },
+                        { type: 'text-img', text: oldText2 || '你走之后，我学会了在凌晨三点给自己煮面，加两个荷包蛋，一个给你留着，凉了再倒掉。这个习惯，我改了很久都没改掉。', img: '' }
+                    ];
+                    saveFeedsData(postId, migrated);
+                    return migrated;
+                }
+
+                feedsData = defaultData || [];
+                saveFeedsData(postId, feedsData);
+                return feedsData;
+            }
+
             // ================= 渲染图文帖子动态 =================
-            function renderFeeds(postId, containerId) {
+            function renderFeeds(postId, containerId, defaultData) {
                 const container = document.getElementById(containerId);
                 if(!container) return;
 
-                let feedsData = getFeedsData(postId);
+                let feedsData = ensureDefaultData(postId, defaultData);
                 const currentUsername = document.getElementById('usernameDisplay').innerText || 'amber_starry';
                 
-                // 兼容旧版本无类型的数据
-                if(feedsData) {
-                    feedsData.forEach(item => {
-                        if (!item.type) item.type = 'text-img';
-                    });
-                }
-
-                if(!feedsData) {
-                    const defaultDataMap = {
-                        'feed-post-3': [
-                            { type: 'text-img', text: '收录了一些空洞的几何轨迹。', img: '' },
-                            { type: 'text-img', text: '就像我们在彼此世界留下过的交集。', img: '' }
-                        ],
-                        'feed-post-4': [
-                            { type: 'text-img', text: '“你问我还爱不爱你，我说不爱了。”', img: '' }
-                        ],
-                        'feed-post-5': [
-                            { type: 'text-img', text: '“我没有在等你，我只是暂时还没办法喜欢上别人。”', img: '' }
-                        ],
-                        'feed-post-6': [
-                            { type: 'text-img', text: '感谢「星海旅团」为本频道提供的独家冠名支持。', img: '' }
-                        ]
-                    };
-                    feedsData = defaultDataMap[containerId] || [];
-                    saveFeedsData(postId, feedsData);
-                }
+                feedsData.forEach(item => {
+                    if (!item.type) item.type = 'text-img';
+                });
 
                 container.innerHTML = '';
 
@@ -680,8 +697,12 @@
                 feedsData.forEach((item, index) => {
                     const feedItem = document.createElement('div');
                     feedItem.className = 'feed-item';
+                    
+                    if (containerId === 'feed-post-1') {
+                        feedItem.classList.add('post');
+                    }
 
-                    // 头部信息 (所有模式共享)
+                    // 头部信息
                     const headerDiv = document.createElement('div');
                     headerDiv.className = 'post-header';
                     
@@ -703,7 +724,7 @@
 
                     feedItem.appendChild(headerDiv);
 
-                    // === 根据模式渲染文案 ===
+                    // === 文案 ===
                     if (item.type === 'text-img') {
                         const textDiv = document.createElement('div');
                         textDiv.className = 'feed-text';
@@ -714,7 +735,7 @@
                         feedItem.appendChild(textDiv);
                     }
 
-                    // === 图片区 (所有模式共享) ===
+                    // === 图片区 ===
                     const imgWrapper = document.createElement('div');
                     imgWrapper.className = 'feed-image-wrapper';
                     
@@ -745,7 +766,7 @@
                             if(confirm('确定要删除这组图文吗？')) {
                                 feedsData.splice(index, 1);
                                 saveFeedsData(postId, feedsData);
-                                renderFeeds(postId, containerId);
+                                renderFeeds(postId, containerId); 
                             }
                         };
                         feedItem.appendChild(deleteBtn);
@@ -758,7 +779,6 @@
                 const addActions = document.createElement('div');
                 addActions.className = 'add-actions';
 
-                // 添加图文按钮
                 const addTextImgBtn = document.createElement('div');
                 addTextImgBtn.className = 'add-new-feed-btn';
                 addTextImgBtn.innerHTML = '<i class="fas fa-edit"></i> 添加图文';
@@ -770,7 +790,6 @@
                 };
                 addActions.appendChild(addTextImgBtn);
 
-                // 添加纯图片按钮
                 const addImgOnlyBtn = document.createElement('div');
                 addImgOnlyBtn.className = 'add-new-feed-btn';
                 addImgOnlyBtn.innerHTML = '<i class="fas fa-image"></i> 添加图片';
@@ -786,22 +805,38 @@
             }
 
             function initAllFeeds() {
-                renderFeeds('feed-post-3', 'feed-post-3');
-                renderFeeds('feed-post-4', 'feed-post-4');
-                renderFeeds('feed-post-5', 'feed-post-5');
-                renderFeeds('feed-post-6', 'feed-post-6');
+                renderFeeds('feed-post-1', 'feed-post-1');
+
+                const defaultDataMap = {
+                    'feed-post-3': [
+                        { type: 'text-img', text: '收录了一些空洞的几何轨迹。', img: '' },
+                        { type: 'text-img', text: '就像我们在彼此世界留下过的交集。', img: '' }
+                    ],
+                    'feed-post-4': [
+                        { type: 'text-img', text: '“你问我还爱不爱你，我说不爱了。”', img: '' }
+                    ],
+                    'feed-post-5': [
+                        { type: 'text-img', text: '“我没有在等你，我只是暂时还没办法喜欢上别人。”', img: '' }
+                    ],
+                    'feed-post-6': [
+                        { type: 'text-img', text: '感谢「星海旅团」为本频道提供的独家冠名支持。', img: '' }
+                    ]
+                };
+
+                renderFeeds('feed-post-3', 'feed-post-3', defaultDataMap['feed-post-3']);
+                renderFeeds('feed-post-4', 'feed-post-4', defaultDataMap['feed-post-4']);
+                renderFeeds('feed-post-5', 'feed-post-5', defaultDataMap['feed-post-5']);
+                renderFeeds('feed-post-6', 'feed-post-6', defaultDataMap['feed-post-6']);
             }
 
             // 初始化加载本地存储
             function loadSavedData() {
-                // 1. 恢复基础文本
                 const textElems = ['editName', 'editBio', 'editJoinDate', 'desc1', 'desc2'];
                 textElems.forEach(id => {
                     const saved = localStorage.getItem('amber_' + id);
                     if (saved) document.getElementById(id).innerHTML = saved;
                 });
 
-                // 2. 恢复用户名
                 const savedUsername = localStorage.getItem('amber_username_sync');
                 if (savedUsername) {
                     document.getElementById('usernameDisplay').textContent = savedUsername;
@@ -811,16 +846,6 @@
                     syncUsername(defaultName);
                 }
 
-                // 3. 恢复日常文本
-                for (let i = 1; i <= 2; i++) {
-                    const saved = localStorage.getItem('amber_text_post-' + i);
-                    if (saved) {
-                        const target = document.getElementById('text-post-' + i);
-                        if(target) target.innerHTML = saved;
-                    }
-                }
-
-                // 4. 恢复图片
                 const savedCover = localStorage.getItem('amber_cover_bg');
                 if (savedCover) {
                     document.getElementById('profileCover').style.backgroundImage = `url(${savedCover})`;
@@ -828,23 +853,13 @@
 
                 const savedAvatar = localStorage.getItem('amber_main_avatar');
                 if (savedAvatar) {
-                    // 主头像
                     const mainAvImg = document.getElementById('mainAvatarImg');
                     mainAvImg.src = savedAvatar;
                     document.getElementById('mainAvatar').classList.add('has-img');
-                    // 帖子小头像
                     document.querySelectorAll('.post-avatar').forEach(el => {
                         el.classList.add('has-img');
-                        el.querySelector('img').src = savedAvatar;
+                        if(el.querySelector('img')) el.querySelector('img').src = savedAvatar;
                     });
-                }
-
-                const img1 = localStorage.getItem('amber_img_post-1');
-                if(img1) {
-                    const imgEl = document.getElementById('img-post-1');
-                    const imgTag = document.getElementById('img-post-1-tag');
-                    imgTag.src = img1;
-                    imgEl.classList.add('has-img');
                 }
 
                 initAllFeeds();
@@ -869,7 +884,7 @@
                     document.querySelectorAll('.feed-text').forEach(el => el.setAttribute('contenteditable', 'false'));
                 }
                 
-                initAllFeeds(); // 重新渲染控制删除和添加按钮的显示
+                initAllFeeds(); 
                 
                 modeBtns.forEach(btn => {
                     if (btn.dataset.mode === mode) btn.classList.add('active');
@@ -932,11 +947,6 @@
 
                     if (target.id) {
                         localStorage.setItem('amber_' + target.id, target.innerHTML);
-                    } else {
-                        const parentPost = target.closest('.post, .design-post');
-                        if (parentPost && parentPost.id && target.classList.contains('post-text')) {
-                            localStorage.setItem('amber_text_' + parentPost.id, target.innerHTML);
-                        }
                     }
                 }
             }, true);
@@ -972,15 +982,13 @@
                 reader.onload = function(event) {
                     const base64 = event.target.result;
                     
-                    // 主头像
                     const mainAvImg = document.getElementById('mainAvatarImg');
                     mainAvImg.src = base64;
                     document.getElementById('mainAvatar').classList.add('has-img');
                     
-                    // 帖子小头像
                     document.querySelectorAll('.post-avatar').forEach(el => {
                         el.classList.add('has-img');
-                        el.querySelector('img').src = base64;
+                        if(el.querySelector('img')) el.querySelector('img').src = base64;
                     });
                     
                     try { localStorage.setItem('amber_main_avatar', base64); } catch(err) { alert('图片太大，无法保存'); }
@@ -1003,15 +1011,7 @@
                 reader.onload = function(event) {
                     const base64 = event.target.result;
                     
-                    // 1. 日常页单图
-                    if(currentUploadTargetId === 'img-post-1') {
-                        const imgTag = document.getElementById('img-post-1-tag');
-                        imgTag.src = base64;
-                        document.getElementById('img-post-1').classList.add('has-img');
-                        try { localStorage.setItem(currentUploadStorageKey, base64); } catch(err) { alert('图片太大'); }
-                    } 
-                    // 2. 图文流图片
-                    else if(currentUploadStorageKey && currentUploadStorageKey.startsWith('feed-img-')) {
+                    if(currentUploadStorageKey && currentUploadStorageKey.startsWith('feed-img-')) {
                         const postId = currentUploadTargetId;
                         const index = parseInt(currentUploadStorageKey.replace('feed-img-', ''));
                         let feedsData = getFeedsData(postId);
@@ -1026,26 +1026,6 @@
                 };
                 reader.readAsDataURL(file);
             });
-
-            // 日常文字编辑弹窗
-            window.openEditModal = function(postId) {
-                if(!body.classList.contains('edit-mode')) return;
-                currentEditPostId = postId;
-                const textEl = document.getElementById('text-' + postId);
-                document.getElementById('editPostTextArea').value = textEl ? textEl.innerText : '';
-                document.getElementById('editPostOverlay').classList.add('active');
-            };
-
-            window.savePostEdit = function() {
-                const newText = document.getElementById('editPostTextArea').value;
-                const textEl = document.getElementById('text-' + currentEditPostId);
-                if (textEl) {
-                    textEl.innerText = newText;
-                    localStorage.setItem('amber_text_' + currentEditPostId, newText);
-                }
-                document.getElementById('editPostOverlay').classList.remove('active');
-                if (body.classList.contains('edit-mode')) setMode('edit');
-            };
 
             // 页签切换与折叠
             document.querySelectorAll('.tab').forEach(tab => {
