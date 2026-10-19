@@ -461,6 +461,28 @@
         body.edit-mode .grid-image-item:hover .img-edit-overlay { display: flex; }
         .img-edit-overlay i { font-size: 1.2rem; margin-bottom: 4px; }
 
+        /* 删除图片按钮 */
+        .img-delete-btn {
+            display: none;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            z-index: 20;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+        .img-delete-btn:hover { background: #dc2626; transform: scale(1.1); }
+        body.edit-mode .grid-image-item:hover .img-delete-btn { display: flex; }
+
         .add-actions {
             display: none; 
             gap: 10px;
@@ -489,7 +511,7 @@
         body.edit-mode .delete-feed-btn { display: block; }
 
         /* =========================================
-           须知板块
+           须知板块 (优化后)
            ========================================= */
         .accordion-item { 
             background: #fff; 
@@ -514,23 +536,21 @@
             outline: none; border-radius: 4px; padding: 2px 4px; margin-left: -4px;
             position: relative;
         }
-        /* 标题编辑提示 */
         body.edit-mode .accordion-title {
             background: rgba(255, 255, 255, 0.8);
             border: 1px dashed var(--c-primary-light);
             cursor: text;
         }
-        .acc-title-hint {
+        
+        /* 须知提示图标 */
+        .acc-hint-icon {
             display: none;
-            position: absolute;
-            right: -16px;
-            top: 50%;
-            transform: translateY(-50%);
             color: var(--c-primary);
-            font-size: 0.7rem;
-            pointer-events: none;
+            font-size: 0.75rem;
+            margin-left: 6px;
+            opacity: 0.7;
         }
-        body.edit-mode .accordion-title:hover .acc-title-hint { display: block; }
+        body.edit-mode .acc-hint-icon { display: inline-block; }
 
         .accordion-arrow { color: var(--c-text-muted); transition: transform 0.3s; font-size: 0.8rem; }
         .accordion-item.active .accordion-arrow { transform: rotate(180deg); }
@@ -548,7 +568,6 @@
         .accordion-desc::-webkit-scrollbar-track { background: transparent; }
         .accordion-desc::-webkit-scrollbar-thumb { background: var(--c-primary-light); border-radius: 10px; }
         
-        /* 内容编辑提示 */
         body.edit-mode .accordion-desc { 
             background: #f8fbff; 
             border-radius: 8px; 
@@ -556,6 +575,8 @@
             border: 1px solid var(--c-primary-light); 
             cursor: text;
         }
+        
+        /* 正文编辑提示 */
         .acc-desc-hint {
             display: none;
             position: absolute;
@@ -567,34 +588,9 @@
             padding: 2px 6px;
             border-radius: 4px;
             pointer-events: none;
-        }
-        body.edit-mode .accordion-desc:hover .acc-desc-hint { display: block; }
-
-        /* 须知内的操作按钮 */
-        .accordion-actions {
-            position: absolute;
-            top: 10px;
-            right: 36px;
-            display: none;
-            gap: 6px;
             z-index: 10;
         }
-        body.edit-mode .accordion-actions { display: flex; }
-        .acc-action-btn {
-            background: rgba(255,255,255,0.9);
-            border: 1px solid var(--c-border);
-            color: var(--c-primary-dark);
-            width: 24px; height: 24px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.65rem;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-        }
-        .acc-action-btn:hover { background: #fff; color: var(--c-primary); }
-        .acc-action-btn.delete { color: #ef4444; }
-        .acc-action-btn.delete:hover { color: #dc2626; }
+        body.edit-mode .accordion-desc:hover .acc-desc-hint { display: block; }
 
         .add-acc-btn {
             display: none;
@@ -1394,11 +1390,26 @@
                                     };
                                     imgItem.appendChild(overlay);
 
+                                    // 删除图片按钮
+                                    const delImgBtn = document.createElement('div');
+                                    delImgBtn.className = 'img-delete-btn';
+                                    delImgBtn.innerHTML = '<i class="fas fa-times"></i>';
+                                    delImgBtn.onclick = (e) => {
+                                        e.stopPropagation();
+                                        if(!document.body.classList.contains('edit-mode')) return;
+                                        
+                                        if (confirm('确定要删除这张图片吗？')) {
+                                            feedsData[index].img.splice(imgIdx, 1);
+                                            saveFeedsData(postId, feedsData);
+                                            renderFeeds(postId, containerId);
+                                        }
+                                    };
+                                    imgItem.appendChild(delImgBtn);
+
                                     gridDiv.appendChild(imgItem);
                                 });
                             }
 
-                            // 最多只能上传 3 张图片
                             if (document.body.classList.contains('edit-mode') && imgCount < 3) {
                                 const addBtn = document.createElement('div');
                                 addBtn.className = 'grid-add-btn';
@@ -1544,7 +1555,7 @@
                     
                     // 标题编辑提示
                     const titleHint = document.createElement('i');
-                    titleHint.className = 'fas fa-pen acc-title-hint';
+                    titleHint.className = 'fas fa-pen acc-hint-icon';
                     title.appendChild(titleHint);
                     
                     title.addEventListener('blur', function() {
@@ -1558,23 +1569,6 @@
                         }
                     });
                     header.appendChild(title);
-
-                    const actions = document.createElement('div');
-                    actions.className = 'accordion-actions';
-                    const delBtn = document.createElement('div');
-                    delBtn.className = 'acc-action-btn delete';
-                    delBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                    delBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        if(confirm('确定要删除这个版块吗？')) {
-                            let newData = getAccordionData();
-                            newData.splice(index, 1);
-                            saveAccordionData(newData);
-                            renderAccordion();
-                        }
-                    };
-                    actions.appendChild(delBtn);
-                    header.appendChild(actions);
 
                     const arrow = document.createElement('i');
                     arrow.className = 'fas fa-chevron-down accordion-arrow';
@@ -1829,7 +1823,7 @@
                 
                 if (currentImageIndex === -1) {
                     const currentCount = feedsData[currentPostIndex].img ? feedsData[currentPostIndex].img.length : 0;
-                    const remaining = 3 - currentCount; // 最多 3 张
+                    const remaining = 3 - currentCount; 
                     
                     if (remaining <= 0) {
                         alert('单个帖子最多只能上传 3 张图片');
@@ -1838,7 +1832,7 @@
                     }
 
                     if (fileList.length > remaining) {
-                        alert(`只能再上传 ${remaining} 张图片，超出部分已被忽略。`);
+                        alert(`当前最多还能上传 ${remaining} 张图片，超出部分已忽略。`);
                     }
 
                     const filesToAdd = fileList.slice(0, remaining);
@@ -1857,6 +1851,14 @@
                         feedsData[currentPostIndex].img = (feedsData[currentPostIndex].img || []).concat(loadedImages);
                         saveFeedsData(postId, feedsData);
                         renderFeeds(postId, postId);
+                        
+                        // 弹窗提示上传成功
+                        const newCount = feedsData[currentPostIndex].img.length;
+                        if (newCount >= 3) {
+                            alert(`已上传满 3 张图片，无法继续上传更多图片。`);
+                        } else {
+                            alert(`已成功上传 ${loadedImages.length} 张图片，当前共 ${newCount} 张。`);
+                        }
                     }
                 } else {
                     try {
