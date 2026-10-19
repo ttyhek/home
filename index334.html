@@ -44,7 +44,6 @@
             border-right: 1px solid rgba(0, 0, 0, 0.03);
         }
 
-        /* PC端：限制最大宽度居中 */
         @media (min-width: 641px) {
             .homepage {
                 max-width: 640px;
@@ -61,7 +60,6 @@
             position: sticky; top: 0; z-index: 20;
         }
 
-        /* 音乐播放器区域 */
         .music-player {
             display: flex;
             align-items: center;
@@ -97,7 +95,6 @@
             color: var(--c-text-muted);
         }
 
-        /* 音乐编辑提示 */
         .music-edit-hint {
             display: none;
             position: absolute;
@@ -340,25 +337,65 @@
         .feed-text-edit-btn:hover { transform: scale(1.1); }
         body.edit-mode .feed-text-edit-btn { display: flex; }
 
-        .feed-image-wrapper {
+        /* =========================================
+           微信朋友圈九宫格图片排版
+           ========================================= */
+        .feed-image-grid {
+            display: grid;
+            gap: 6px;
             width: 100%;
+            margin-top: 4px;
+        }
+
+        /* 根据图片数量设置列数 */
+        .feed-image-grid[data-count="1"] { grid-template-columns: 1fr; max-width: 70%; }
+        .feed-image-grid[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+        .feed-image-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="4"] { grid-template-columns: repeat(2, 1fr); }
+        .feed-image-grid[data-count="5"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="6"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="7"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="8"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="9"] { grid-template-columns: repeat(3, 1fr); }
+
+        .grid-image-item {
             position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 100%;
+            aspect-ratio: 1 / 1; /* 正方形 */
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: #f0f4f8;
             cursor: pointer;
         }
         
-        .feed-image-wrapper img {
+        .grid-image-item img {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover; /* 填满正方形 */
             display: block;
-            object-fit: contain;
-            max-height: none; 
-            border-radius: 8px;
         }
 
-        /* 图片占位提示 */
+        /* 添加图片按钮 */
+        .grid-add-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border: 1px dashed var(--c-primary-light);
+            border-radius: 6px;
+            background: rgba(245, 249, 255, 0.3);
+            color: var(--c-primary-dark);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: background 0.2s;
+        }
+        .grid-add-btn:hover { background: rgba(220, 235, 255, 0.9); }
+        .grid-add-btn i { font-size: 1.2rem; margin-bottom: 4px; }
+
+        /* 空图片占位提示 */
         .img-placeholder {
             display: none; 
             flex-direction: column; align-items: center; justify-content: center;
@@ -372,6 +409,16 @@
         }
         .img-placeholder i { font-size: 1.5rem; margin-bottom: 6px; }
         body.edit-mode .img-placeholder { display: flex; }
+
+        /* 图片悬浮遮罩 */
+        .img-edit-overlay {
+            position: absolute; inset: 0; border-radius: inherit;
+            background: rgba(0,0,0,0.4); color: white;
+            display: none; align-items: center; justify-content: center; flex-direction: column;
+            cursor: pointer; z-index: 10; font-weight: 600; font-size: 0.75rem;
+        }
+        body.edit-mode .grid-image-item:hover .img-edit-overlay { display: flex; }
+        .img-edit-overlay i { font-size: 1.2rem; margin-bottom: 4px; }
 
         /* 添加按钮 */
         .add-actions {
@@ -400,16 +447,6 @@
             text-align: right; padding: 4px; font-weight: 600;
         }
         body.edit-mode .delete-feed-btn { display: block; }
-
-        /* 图片上传遮罩 */
-        .img-edit-overlay {
-            position: absolute; inset: 0; border-radius: inherit;
-            background: rgba(0,0,0,0.4); color: white;
-            display: none; align-items: center; justify-content: center; flex-direction: column;
-            cursor: pointer; z-index: 10; font-weight: 600; font-size: 0.85rem;
-        }
-        body.edit-mode .feed-image-wrapper:hover .img-edit-overlay { display: flex; }
-        .img-edit-overlay i { font-size: 1.5rem; margin-bottom: 6px; }
 
         /* 须知板块 */
         .accordion-item { background: #fff; border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--c-border); overflow: hidden; }
@@ -566,14 +603,12 @@
     </style>
 </head>
 <body>
-    <!-- 隐藏的音频播放器 -->
     <audio id="bgMusic" loop preload="auto">
         <source src="https://music.163.com/song/media/outer/url?id=29722012.mp3" type="audio/mpeg">
     </audio>
 
     <div class="homepage">
         <div class="navbar">
-            <!-- 左上角音乐播放器 -->
             <div class="music-player">
                 <div class="music-edit-hint" id="musicEditHint">更换音乐</div>
                 <div class="music-btn" id="musicPlayBtn">
@@ -642,14 +677,12 @@
         </div>
 
         <div class="tab-panels">
-            <!-- 日常面板 -->
             <div class="tab-panel active" id="tab1">
                 <div class="panel-scroll">
                     <div class="design-post" id="feed-post-1"></div>
                 </div>
             </div>
 
-            <!-- 须知面板 -->
             <div class="tab-panel" id="tab2">
                 <div class="panel-scroll">
                     <div class="accordion-item">
@@ -686,28 +719,24 @@
                 </div>
             </div>
 
-            <!-- 头牌面板 -->
             <div class="tab-panel" id="tab3">
                 <div class="panel-scroll">
                     <div class="design-post" id="feed-post-3"></div>
                 </div>
             </div>
 
-            <!-- 板评面板 -->
             <div class="tab-panel" id="tab4">
                 <div class="panel-scroll">
                     <div class="design-post" id="feed-post-4"></div>
                 </div>
             </div>
 
-            <!-- 话术面板 -->
             <div class="tab-panel" id="tab5">
                 <div class="panel-scroll">
                     <div class="design-post" id="feed-post-5"></div>
                 </div>
             </div>
 
-            <!-- 冠名面板 -->
             <div class="tab-panel" id="tab6">
                 <div class="panel-scroll">
                     <div class="design-post" id="feed-post-6"></div>
@@ -718,7 +747,6 @@
         <div class="end-note"><i class="fas fa-circle"></i> 已经到底了 · 琥珀的星空</div>
     </div>
 
-    <!-- 密码验证弹窗 -->
     <div class="pwd-overlay" id="pwdOverlay">
         <div class="pwd-card">
             <div class="pwd-icon"><i class="fas fa-lock"></i></div>
@@ -733,7 +761,6 @@
         </div>
     </div>
 
-    <!-- 纯文字修改专用弹窗 -->
     <div class="pwd-overlay" id="textEditOverlay">
         <div class="pwd-card edit-text-modal">
             <div class="pwd-icon"><i class="fas fa-pen-nib"></i></div>
@@ -747,7 +774,6 @@
         </div>
     </div>
 
-    <!-- 音乐配置弹窗 -->
     <div class="pwd-overlay" id="musicConfigOverlay">
         <div class="pwd-card music-config-modal">
             <div class="pwd-icon"><i class="fas fa-music"></i></div>
@@ -770,8 +796,7 @@
         </div>
     </div>
 
-    <!-- 全局图片上传组件 -->
-    <input type="file" id="globalImgInput" accept="image/*" class="hidden-file">
+    <input type="file" id="globalImgInput" accept="image/*" multiple class="hidden-file">
     
     <script>
         (function() {
@@ -786,7 +811,6 @@
             
             let isPlaying = false;
 
-            // 播放/暂停控制
             musicPlayBtn.addEventListener('click', function() {
                 if (isPlaying) {
                     bgMusic.pause();
@@ -805,17 +829,14 @@
                 isPlaying = !isPlaying;
             });
 
-            // 点击“更换音乐”提示
             musicEditHint.addEventListener('click', function() {
                 if(!document.body.classList.contains('edit-mode')) return;
-                // 填充当前配置
                 document.getElementById('configMusicId').value = localStorage.getItem('amber_music_id') || '29722012';
                 document.getElementById('configMusicTitle').value = localStorage.getItem('amber_music_title') || '新地球';
                 document.getElementById('configMusicArtist').value = localStorage.getItem('amber_music_artist') || '林俊杰';
                 musicConfigOverlay.classList.add('active');
             });
 
-            // 保存音乐配置
             window.saveMusicConfig = function() {
                 let inputVal = document.getElementById('configMusicId').value.trim();
                 const title = document.getElementById('configMusicTitle').value.trim() || '未知歌曲';
@@ -826,7 +847,6 @@
                     return;
                 }
 
-                // 解析 ID (支持纯数字ID 或 包含 id=xxx 的分享链接)
                 let musicId = inputVal;
                 if (inputVal.includes('id=')) {
                     const match = inputVal.match(/id=(\d+)/);
@@ -836,28 +856,23 @@
                     if (match) musicId = match[1];
                 }
 
-                // 更新 src
                 const newSrc = `https://music.163.com/song/media/outer/url?id=${musicId}.mp3`;
                 bgMusic.src = newSrc;
                 bgMusic.load();
 
-                // 更新 UI
                 musicTitleDisplay.textContent = title;
                 musicArtistDisplay.textContent = artist;
 
-                // 保存本地
                 localStorage.setItem('amber_music_id', musicId);
                 localStorage.setItem('amber_music_title', title);
                 localStorage.setItem('amber_music_artist', artist);
 
-                // 重置播放状态
                 isPlaying = false;
                 musicIcon.className = 'fas fa-play';
                 
                 musicConfigOverlay.classList.remove('active');
             };
 
-            // 初始化加载音乐配置
             const savedMusicId = localStorage.getItem('amber_music_id');
             if (savedMusicId) {
                 bgMusic.src = `https://music.163.com/song/media/outer/url?id=${savedMusicId}.mp3`;
@@ -865,17 +880,17 @@
                 document.getElementById('musicArtistDisplay').textContent = localStorage.getItem('amber_music_artist') || '未知歌手';
             }
 
-
             // ================= 其他原有逻辑 =================
             let currentUploadTargetId = null;
             let currentUploadStorageKey = null;
+            let currentPostIndex = -1;
+            let currentImageIndex = -1; 
             
             let currentEditingPostId = null;
             let currentEditingIndex = null;
             
             const SECRET_KEY = '3344';
 
-            // ================= 同步用户名逻辑 =================
             function syncUsername(newName) {
                 document.querySelectorAll('.sync-username').forEach(el => {
                     el.textContent = '@' + newName;
@@ -884,7 +899,6 @@
                 document.title = newName + "'s Starry Sky";
             }
 
-            // ================= 数据存储结构 (图文帖子) =================
             function getFeedsData(postId) {
                 const data = localStorage.getItem('amber_feeds_' + postId);
                 return data ? JSON.parse(data) : null;
@@ -897,10 +911,18 @@
                 }
             }
 
-            // ================= 数据初始化兼容 =================
             function ensureDefaultData(postId, defaultData) {
                 let feedsData = getFeedsData(postId);
-                if (feedsData) return feedsData;
+                if (feedsData) {
+                    feedsData.forEach(item => {
+                        if (!item.type) item.type = 'text-img';
+                        if (item.img && !Array.isArray(item.img)) {
+                            item.img = [item.img];
+                        }
+                        if (!item.img) item.img = [];
+                    });
+                    return feedsData;
+                }
 
                 if (postId === 'feed-post-1') {
                     const oldText1 = localStorage.getItem('amber_text_post-1');
@@ -908,19 +930,19 @@
                     const oldImg1 = localStorage.getItem('amber_img_post-1');
                     
                     const migrated = [
-                        { type: 'text-img', text: oldText1 || '我拍下这张照片的时候，你还在我身边。现在照片还在，你走了。原来有些画面，从一开始就是用来怀念的。🖤', img: oldImg1 || '' },
-                        { type: 'text-img', text: oldText2 || '你走之后，我学会了在凌晨三点给自己煮面，加两个荷包蛋，一个给你留着，凉了再倒掉。这个习惯，我改了很久都没改掉。', img: '' }
+                        { type: 'text-img', text: oldText1 || '我拍下这张照片的时候，你还在我身边。现在照片还在，你走了。原来有些画面，从一开始就是用来怀念的。🖤', img: oldImg1 ? [oldImg1] : [] },
+                        { type: 'text-img', text: oldText2 || '你走之后，我学会了在凌晨三点给自己煮面，加两个荷包蛋，一个给你留着，凉了再倒掉。这个习惯，我改了很久都没改掉。', img: [] }
                     ];
                     saveFeedsData(postId, migrated);
                     return migrated;
                 }
 
                 feedsData = defaultData || [];
+                feedsData.forEach(item => { if (!item.img) item.img = []; });
                 saveFeedsData(postId, feedsData);
                 return feedsData;
             }
 
-            // ================= 渲染图文帖子动态 =================
             function renderFeeds(postId, containerId, defaultData) {
                 const container = document.getElementById(containerId);
                 if(!container) return;
@@ -929,17 +951,12 @@
                 const currentUsername = document.getElementById('usernameDisplay').innerText || 'amber_starry';
                 const mainAvatarSrc = document.getElementById('mainAvatarImg').src;
                 
-                feedsData.forEach(item => {
-                    if (!item.type) item.type = 'text-img';
-                });
-
                 container.innerHTML = '';
 
                 feedsData.forEach((item, index) => {
                     const feedItem = document.createElement('div');
                     feedItem.className = 'feed-item';
 
-                    // 头部信息
                     const headerDiv = document.createElement('div');
                     headerDiv.className = 'feed-header';
                     
@@ -973,7 +990,6 @@
 
                     feedItem.appendChild(headerDiv);
 
-                    // 文案区
                     if (item.type === 'text-img' || item.type === 'text') {
                         const textWrapper = document.createElement('div');
                         textWrapper.className = 'feed-text-wrapper';
@@ -987,7 +1003,6 @@
                         
                         textWrapper.appendChild(textDiv);
 
-                        // 纯文字专属的编辑按钮
                         if (item.type === 'text') {
                             const editBtn = document.createElement('div');
                             editBtn.className = 'feed-text-edit-btn';
@@ -1007,29 +1022,60 @@
                         feedItem.appendChild(textWrapper);
                     }
 
-                    // 图片区
                     if (item.type !== 'text') {
-                        const imgWrapper = document.createElement('div');
-                        imgWrapper.className = 'feed-image-wrapper';
+                        const imgCount = item.img ? item.img.length : 0;
                         
-                        if(item.img) {
-                            const img = document.createElement('img');
-                            img.src = item.img;
-                            imgWrapper.appendChild(img);
-                        } else {
-                            imgWrapper.innerHTML = `<div class="img-placeholder"><i class="fas fa-camera"></i>点击上传配图</div>`;
-                        }
+                        if (imgCount > 0 || document.body.classList.contains('edit-mode')) {
+                            const gridDiv = document.createElement('div');
+                            gridDiv.className = 'feed-image-grid';
+                            gridDiv.dataset.count = Math.max(1, imgCount); 
 
-                        imgWrapper.onclick = () => {
-                            if(!document.body.classList.contains('edit-mode')) return;
-                            currentUploadTargetId = postId;
-                            currentUploadStorageKey = 'feed-img-' + index;
-                            document.getElementById('globalImgInput').click();
-                        };
-                        feedItem.appendChild(imgWrapper);
+                            if (item.img) {
+                                item.img.forEach((imgSrc, imgIdx) => {
+                                    const imgItem = document.createElement('div');
+                                    imgItem.className = 'grid-image-item';
+                                    
+                                    const img = document.createElement('img');
+                                    img.src = imgSrc;
+                                    imgItem.appendChild(img);
+
+                                    const overlay = document.createElement('div');
+                                    overlay.className = 'img-edit-overlay';
+                                    overlay.innerHTML = '<i class="fas fa-image"></i>';
+                                    overlay.onclick = (e) => {
+                                        e.stopPropagation();
+                                        if(!document.body.classList.contains('edit-mode')) return;
+                                        currentUploadTargetId = postId;
+                                        currentUploadStorageKey = 'feed-img';
+                                        currentPostIndex = index;
+                                        currentImageIndex = imgIdx;
+                                        document.getElementById('globalImgInput').click();
+                                    };
+                                    imgItem.appendChild(overlay);
+
+                                    gridDiv.appendChild(imgItem);
+                                });
+                            }
+
+                            if (document.body.classList.contains('edit-mode') && imgCount < 9) {
+                                const addBtn = document.createElement('div');
+                                addBtn.className = 'grid-add-btn';
+                                addBtn.innerHTML = '<i class="fas fa-plus"></i>';
+                                addBtn.onclick = (e) => {
+                                    e.stopPropagation();
+                                    currentUploadTargetId = postId;
+                                    currentUploadStorageKey = 'feed-img';
+                                    currentPostIndex = index;
+                                    currentImageIndex = -1; 
+                                    document.getElementById('globalImgInput').click();
+                                };
+                                gridDiv.appendChild(addBtn);
+                            }
+
+                            feedItem.appendChild(gridDiv);
+                        }
                     }
 
-                    // 删除按钮
                     if(feedsData.length > 1) {
                         const deleteBtn = document.createElement('div');
                         deleteBtn.className = 'delete-feed-btn';
@@ -1050,7 +1096,6 @@
                     container.appendChild(feedItem);
                 });
 
-                // 添加按钮组
                 const addActions = document.createElement('div');
                 addActions.className = 'add-actions';
 
@@ -1059,7 +1104,7 @@
                 addTextImgBtn.innerHTML = '<i class="fas fa-edit"></i> 图文';
                 addTextImgBtn.onclick = () => {
                     if(!document.body.classList.contains('edit-mode')) return;
-                    feedsData.push({ type: 'text-img', text: '新的文案...', img: '' });
+                    feedsData.push({ type: 'text-img', text: '新的文案...', img: [] });
                     saveFeedsData(postId, feedsData);
                     renderFeeds(postId, containerId);
                 };
@@ -1070,7 +1115,7 @@
                 addImgOnlyBtn.innerHTML = '<i class="fas fa-image"></i> 图片';
                 addImgOnlyBtn.onclick = () => {
                     if(!document.body.classList.contains('edit-mode')) return;
-                    feedsData.push({ type: 'img', text: '', img: '' });
+                    feedsData.push({ type: 'img', text: '', img: [] });
                     saveFeedsData(postId, feedsData);
                     renderFeeds(postId, containerId);
                 };
@@ -1081,7 +1126,7 @@
                 addTextOnlyBtn.innerHTML = '<i class="fas fa-font"></i> 文字';
                 addTextOnlyBtn.onclick = () => {
                     if(!document.body.classList.contains('edit-mode')) return;
-                    feedsData.push({ type: 'text', text: '新的文字...', img: '' });
+                    feedsData.push({ type: 'text', text: '新的文字...', img: [] });
                     saveFeedsData(postId, feedsData);
                     renderFeeds(postId, containerId);
                 };
@@ -1095,17 +1140,17 @@
 
                 const defaultDataMap = {
                     'feed-post-3': [
-                        { type: 'text-img', text: '收录了一些空洞的几何轨迹。', img: '' },
-                        { type: 'text-img', text: '就像我们在彼此世界留下过的交集。', img: '' }
+                        { type: 'text-img', text: '收录了一些空洞的几何轨迹。', img: [] },
+                        { type: 'text-img', text: '就像我们在彼此世界留下过的交集。', img: [] }
                     ],
                     'feed-post-4': [
-                        { type: 'text-img', text: '“你问我还爱不爱你，我说不爱了。”', img: '' }
+                        { type: 'text-img', text: '“你问我还爱不爱你，我说不爱了。”', img: [] }
                     ],
                     'feed-post-5': [
-                        { type: 'text-img', text: '“我没有在等你，我只是暂时还没办法喜欢上别人。”', img: '' }
+                        { type: 'text-img', text: '“我没有在等你，我只是暂时还没办法喜欢上别人。”', img: [] }
                     ],
                     'feed-post-6': [
-                        { type: 'text-img', text: '感谢「星海旅团」为本频道提供的独家冠名支持。', img: '' }
+                        { type: 'text-img', text: '感谢「星海旅团」为本频道提供的独家冠名支持。', img: [] }
                     ]
                 };
 
@@ -1115,7 +1160,6 @@
                 renderFeeds('feed-post-6', 'feed-post-6', defaultDataMap['feed-post-6']);
             }
 
-            // 初始化加载本地存储
             function loadSavedData() {
                 const textElems = ['editName', 'editBio', 'editJoinDate', 'desc1', 'desc2'];
                 textElems.forEach(id => {
@@ -1147,7 +1191,6 @@
                 initAllFeeds();
             }
 
-            // 模式切换
             const modeToggle = document.getElementById('modeToggle');
             const modeBtns = modeToggle.querySelectorAll('.mode-btn');
             const body = document.body;
@@ -1202,7 +1245,6 @@
             document.getElementById('pwdCancel').addEventListener('click', () => pwdOverlay.classList.remove('active'));
             pwdInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('pwdConfirm').click(); });
 
-            // 纯文字修改保存
             window.saveTextOnlyEdit = function() {
                 const newText = document.getElementById('textEditArea').value;
                 if (currentEditingPostId !== null && currentEditingIndex !== null) {
@@ -1216,7 +1258,6 @@
                 document.getElementById('textEditOverlay').classList.remove('active');
             };
 
-            // 监听文字输入
             document.addEventListener('blur', function(e) {
                 const target = e.target;
                 if (target.hasAttribute('contenteditable') && target.getAttribute('contenteditable') === 'true') {
@@ -1247,8 +1288,6 @@
                 }
             }, true);
 
-            // ================= 图片上传 =================
-            
             const coverInput = document.getElementById('coverInput');
             document.getElementById('triggerCoverUpload').addEventListener('click', () => {
                 if(body.classList.contains('edit-mode')) coverInput.click();
@@ -1287,40 +1326,73 @@
                 reader.readAsDataURL(file);
             });
 
-            window.triggerImgUpload = function(targetId, storageKey) {
-                if(!body.classList.contains('edit-mode')) return;
-                currentUploadTargetId = targetId;
-                currentUploadStorageKey = storageKey;
-                document.getElementById('globalImgInput').click();
-            };
+            // ================= 多图上传逻辑 =================
+            const globalImgInput = document.getElementById('globalImgInput');
+            
+            globalImgInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (!files || files.length === 0 || !currentUploadTargetId) return;
+                if (currentPostIndex === -1) return;
 
-            document.getElementById('globalImgInput').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file || !currentUploadTargetId) return;
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const base64 = event.target.result;
+                const postId = currentUploadTargetId;
+                let feedsData = getFeedsData(postId);
+                if (!feedsData || !feedsData[currentPostIndex]) {
+                    this.value = '';
+                    return;
+                }
+
+                const fileList = Array.from(files);
+                
+                if (currentImageIndex === -1) {
+                    // 新增图片
+                    const currentCount = feedsData[currentPostIndex].img ? feedsData[currentPostIndex].img.length : 0;
+                    const remaining = 9 - currentCount;
                     
-                    if(currentUploadStorageKey && currentUploadStorageKey.startsWith('feed-img-')) {
-                        const postId = currentUploadTargetId;
-                        const index = parseInt(currentUploadStorageKey.replace('feed-img-', ''));
-                        let feedsData = getFeedsData(postId);
-                        if(feedsData && feedsData[index]) {
-                            feedsData[index].img = base64;
-                            if (feedsData[index].type === 'text') {
-                                feedsData[index].type = 'text-img';
+                    if (remaining <= 0) {
+                        alert('最多只能上传 9 张图片');
+                        this.value = '';
+                        return;
+                    }
+
+                    if (fileList.length > remaining) {
+                        alert(`只能再上传 ${remaining} 张图片，超出部分已被忽略。`);
+                    }
+
+                    const filesToAdd = fileList.slice(0, remaining);
+                    let loadedCount = 0;
+                    const loadedImages = [];
+
+                    filesToAdd.forEach((file, i) => {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            loadedImages[i] = event.target.result;
+                            loadedCount++;
+                            if (loadedCount === filesToAdd.length) {
+                                feedsData[currentPostIndex].img = (feedsData[currentPostIndex].img || []).concat(loadedImages);
+                                saveFeedsData(postId, feedsData);
+                                renderFeeds(postId, postId);
                             }
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                } else {
+                    // 替换单张图片
+                    const file = files[0];
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const base64 = event.target.result;
+                        if (feedsData[currentPostIndex].img && feedsData[currentPostIndex].img[currentImageIndex] !== undefined) {
+                            feedsData[currentPostIndex].img[currentImageIndex] = base64;
                             saveFeedsData(postId, feedsData);
                             renderFeeds(postId, postId);
                         }
-                    }
-                    
-                    this.value = '';
-                };
-                reader.readAsDataURL(file);
+                    };
+                    reader.readAsDataURL(file);
+                }
+                
+                this.value = '';
             });
 
-            // 页签切换与折叠
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', function() {
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1336,7 +1408,6 @@
                 });
             });
 
-            // 启动
             loadSavedData();
             setMode('preview');
         })();
