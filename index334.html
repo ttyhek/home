@@ -44,6 +44,7 @@
             border-right: 1px solid rgba(0, 0, 0, 0.03);
         }
 
+        /* PC端：限制最大宽度居中 */
         @media (min-width: 641px) {
             .homepage {
                 max-width: 640px;
@@ -60,12 +61,60 @@
             position: sticky; top: 0; z-index: 20;
         }
 
-        .logo-icon {
+        /* 音乐播放器区域 */
+        .music-player {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+        .music-btn {
             background: linear-gradient(135deg, var(--c-primary-light), var(--c-primary));
             color: white; width: 34px; height: 34px;
             display: flex; align-items: center; justify-content: center;
             border-radius: 12px; font-size: 1rem; transform: rotate(-3deg);
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(107, 155, 210, 0.4);
+            flex-shrink: 0;
         }
+        .music-btn:hover { transform: rotate(0deg) scale(1.05); }
+        .music-info {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.7rem;
+            line-height: 1.2;
+        }
+        .music-title {
+            font-weight: 800;
+            color: var(--c-text-main);
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .music-artist {
+            color: var(--c-text-muted);
+        }
+
+        /* 音乐编辑提示 */
+        .music-edit-hint {
+            display: none;
+            position: absolute;
+            right: -4px;
+            top: -6px;
+            background: var(--c-primary-dark);
+            color: #fff;
+            font-size: 0.55rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            z-index: 25;
+            animation: fadeInHint 0.3s ease;
+        }
+        body.edit-mode .music-edit-hint { display: block; }
+        @keyframes fadeInHint { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
         .nav-actions { display: flex; align-items: center; gap: 12px; }
         
@@ -431,6 +480,23 @@
             border-color: var(--c-primary);
         }
 
+        /* 音乐配置弹窗 */
+        .music-config-modal .pwd-input {
+            letter-spacing: normal;
+            text-align: left;
+            font-size: 0.8rem;
+            padding: 10px;
+        }
+        .music-config-modal label {
+            display: block;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--c-text-sub);
+            margin-bottom: 4px;
+            margin-top: 8px;
+        }
+
         .hidden-file { display: none; }
 
         /* 手机端适配 */
@@ -480,6 +546,10 @@
             .pwd-title { font-size: 0.95rem; }
             .pwd-input { font-size: 0.9rem; padding: 8px; }
             .pwd-btn { font-size: 0.8rem; padding: 8px; }
+            
+            .music-title { max-width: 80px; font-size: 0.65rem; }
+            .music-artist { font-size: 0.6rem; }
+            .music-btn { width: 30px; height: 30px; font-size: 0.9rem; }
         }
 
         @media (max-width: 360px) {
@@ -491,25 +561,41 @@
             .tab { font-size: 0.7rem; padding: 10px 2px; }
             .feed-name { font-size: 0.8rem; }
             .feed-text { font-size: 0.75rem; }
+            .music-title { max-width: 60px; }
         }
     </style>
 </head>
 <body>
+    <!-- 隐藏的音频播放器 -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://music.163.com/song/media/outer/url?id=29722012.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="homepage">
         <div class="navbar">
-            <div class="logo-area"><div class="logo-icon"><i class="fas fa-feather-alt"></i></div></div>
+            <!-- 左上角音乐播放器 -->
+            <div class="music-player">
+                <div class="music-edit-hint" id="musicEditHint">更换音乐</div>
+                <div class="music-btn" id="musicPlayBtn">
+                    <i class="fas fa-play" id="musicIcon"></i>
+                </div>
+                <div class="music-info">
+                    <span class="music-title" id="musicTitleDisplay">新地球</span>
+                    <span class="music-artist" id="musicArtistDisplay">林俊杰</span>
+                </div>
+            </div>
+            
             <div class="nav-actions">
                 <div class="mode-toggle" id="modeToggle">
                     <div class="mode-btn active" data-mode="preview">预览</div>
                     <div class="mode-btn" data-mode="edit">编辑</div>
                 </div>
-                <div class="nav-icons"><i class="fas fa-search"></i><i class="far fa-bell"></i></div>
             </div>
         </div>
 
         <div class="profile-cover" id="profileCover">
             <div class="cover-edit-overlay" id="triggerCoverUpload">
-                <i class="fas fa-image"></i> 点击更换背景封面
+                <i class="fas fa-image"></i> 更换封面
             </div>
             <input type="file" id="coverInput" accept="image/*" class="hidden-file">
         </div>
@@ -538,7 +624,7 @@
                 <span contenteditable="false"><i class="fas fa-birthday-cake"></i> 21岁</span>
                 <span contenteditable="false"><i class="fas fa-star"></i> 双鱼座</span>
                 <span contenteditable="false"><i class="fas fa-brain"></i> INFP</span>
-                <span contenteditable="false"><i class="fas fa-users"></i> 常驻团：星海旅团</span>
+                <span contenteditable="false"><i class="fas fa-users"></i> 星海旅团</span>
             </div>
             <div class="join-date" id="editJoinDate" contenteditable="false">
                 <span><i class="fas fa-map-marker-alt"></i> 上海 · 静安</span>
@@ -661,15 +747,129 @@
         </div>
     </div>
 
+    <!-- 音乐配置弹窗 -->
+    <div class="pwd-overlay" id="musicConfigOverlay">
+        <div class="pwd-card music-config-modal">
+            <div class="pwd-icon"><i class="fas fa-music"></i></div>
+            <div class="pwd-title">配置网易云音乐</div>
+            <div class="pwd-desc">请输入网易云音乐 ID 或分享链接</div>
+            
+            <label>网易云音乐ID/链接</label>
+            <input type="text" class="pwd-input" id="configMusicId" placeholder="例如：29722012">
+            
+            <label>歌曲名称</label>
+            <input type="text" class="pwd-input" id="configMusicTitle" placeholder="新地球">
+            
+            <label>歌手</label>
+            <input type="text" class="pwd-input" id="configMusicArtist" placeholder="林俊杰">
+            
+            <div class="pwd-actions" style="margin-top: 12px;">
+                <button class="pwd-btn pwd-btn-cancel" onclick="document.getElementById('musicConfigOverlay').classList.remove('active')">取消</button>
+                <button class="pwd-btn pwd-btn-confirm" onclick="saveMusicConfig()">保存配置</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 全局图片上传组件 -->
     <input type="file" id="globalImgInput" accept="image/*" class="hidden-file">
     
     <script>
         (function() {
+            // ================= 音乐播放与配置逻辑 =================
+            const bgMusic = document.getElementById('bgMusic');
+            const musicPlayBtn = document.getElementById('musicPlayBtn');
+            const musicIcon = document.getElementById('musicIcon');
+            const musicTitleDisplay = document.getElementById('musicTitleDisplay');
+            const musicArtistDisplay = document.getElementById('musicArtistDisplay');
+            const musicEditHint = document.getElementById('musicEditHint');
+            const musicConfigOverlay = document.getElementById('musicConfigOverlay');
+            
+            let isPlaying = false;
+
+            // 播放/暂停控制
+            musicPlayBtn.addEventListener('click', function() {
+                if (isPlaying) {
+                    bgMusic.pause();
+                    musicIcon.className = 'fas fa-play';
+                } else {
+                    let playPromise = bgMusic.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(_ => {
+                            musicIcon.className = 'fas fa-pause';
+                        }).catch(error => {
+                            console.log("Playback prevented:", error);
+                            alert('由于浏览器限制，请点击播放按钮来播放音乐。');
+                        });
+                    }
+                }
+                isPlaying = !isPlaying;
+            });
+
+            // 点击“更换音乐”提示
+            musicEditHint.addEventListener('click', function() {
+                if(!document.body.classList.contains('edit-mode')) return;
+                // 填充当前配置
+                document.getElementById('configMusicId').value = localStorage.getItem('amber_music_id') || '29722012';
+                document.getElementById('configMusicTitle').value = localStorage.getItem('amber_music_title') || '新地球';
+                document.getElementById('configMusicArtist').value = localStorage.getItem('amber_music_artist') || '林俊杰';
+                musicConfigOverlay.classList.add('active');
+            });
+
+            // 保存音乐配置
+            window.saveMusicConfig = function() {
+                let inputVal = document.getElementById('configMusicId').value.trim();
+                const title = document.getElementById('configMusicTitle').value.trim() || '未知歌曲';
+                const artist = document.getElementById('configMusicArtist').value.trim() || '未知歌手';
+
+                if (!inputVal) {
+                    alert('请输入音乐 ID 或链接');
+                    return;
+                }
+
+                // 解析 ID (支持纯数字ID 或 包含 id=xxx 的分享链接)
+                let musicId = inputVal;
+                if (inputVal.includes('id=')) {
+                    const match = inputVal.match(/id=(\d+)/);
+                    if (match) musicId = match[1];
+                } else if (!/^\d+$/.test(inputVal) && inputVal.includes('music.163.com')) {
+                    const match = inputVal.match(/song\/(\d+)/);
+                    if (match) musicId = match[1];
+                }
+
+                // 更新 src
+                const newSrc = `https://music.163.com/song/media/outer/url?id=${musicId}.mp3`;
+                bgMusic.src = newSrc;
+                bgMusic.load();
+
+                // 更新 UI
+                musicTitleDisplay.textContent = title;
+                musicArtistDisplay.textContent = artist;
+
+                // 保存本地
+                localStorage.setItem('amber_music_id', musicId);
+                localStorage.setItem('amber_music_title', title);
+                localStorage.setItem('amber_music_artist', artist);
+
+                // 重置播放状态
+                isPlaying = false;
+                musicIcon.className = 'fas fa-play';
+                
+                musicConfigOverlay.classList.remove('active');
+            };
+
+            // 初始化加载音乐配置
+            const savedMusicId = localStorage.getItem('amber_music_id');
+            if (savedMusicId) {
+                bgMusic.src = `https://music.163.com/song/media/outer/url?id=${savedMusicId}.mp3`;
+                document.getElementById('musicTitleDisplay').textContent = localStorage.getItem('amber_music_title') || '未知歌曲';
+                document.getElementById('musicArtistDisplay').textContent = localStorage.getItem('amber_music_artist') || '未知歌手';
+            }
+
+
+            // ================= 其他原有逻辑 =================
             let currentUploadTargetId = null;
             let currentUploadStorageKey = null;
             
-            // 用于记录当前正在编辑的纯文字帖子的位置
             let currentEditingPostId = null;
             let currentEditingIndex = null;
             
@@ -773,7 +973,7 @@
 
                     feedItem.appendChild(headerDiv);
 
-                    // 文案区 (包含一个针对纯文字的快捷编辑按钮)
+                    // 文案区
                     if (item.type === 'text-img' || item.type === 'text') {
                         const textWrapper = document.createElement('div');
                         textWrapper.className = 'feed-text-wrapper';
@@ -785,8 +985,6 @@
                         textDiv.dataset.index = index;
                         textDiv.innerText = item.text || '在这里输入文案...';
                         
-                        // 如果是图文模式，直接点击文本可编辑（在编辑模式下）
-                        // 如果是纯文本模式，为了不误触，且按要求“点击提示按钮修改”，我们为它加上旁边的编辑图标。
                         textWrapper.appendChild(textDiv);
 
                         // 纯文字专属的编辑按钮
@@ -798,7 +996,6 @@
                             editBtn.onclick = (e) => {
                                 e.stopPropagation();
                                 if (!document.body.classList.contains('edit-mode')) return;
-                                // 弹出弹窗修改
                                 currentEditingPostId = postId;
                                 currentEditingIndex = index;
                                 document.getElementById('textEditArea').value = item.text || '';
@@ -832,7 +1029,7 @@
                         feedItem.appendChild(imgWrapper);
                     }
 
-                    // 删除按钮（带二次确认）
+                    // 删除按钮
                     if(feedsData.length > 1) {
                         const deleteBtn = document.createElement('div');
                         deleteBtn.className = 'delete-feed-btn';
@@ -841,7 +1038,6 @@
                             e.stopPropagation();
                             if(!document.body.classList.contains('edit-mode')) return;
                             
-                            // 二次确认弹窗
                             if(confirm('确定要删除这组图文吗？删除后不可恢复。')) {
                                 feedsData.splice(index, 1);
                                 saveFeedsData(postId, feedsData);
@@ -860,7 +1056,7 @@
 
                 const addTextImgBtn = document.createElement('div');
                 addTextImgBtn.className = 'add-new-feed-btn';
-                addTextImgBtn.innerHTML = '<i class="fas fa-edit"></i> 添加图文';
+                addTextImgBtn.innerHTML = '<i class="fas fa-edit"></i> 图文';
                 addTextImgBtn.onclick = () => {
                     if(!document.body.classList.contains('edit-mode')) return;
                     feedsData.push({ type: 'text-img', text: '新的文案...', img: '' });
@@ -871,7 +1067,7 @@
 
                 const addImgOnlyBtn = document.createElement('div');
                 addImgOnlyBtn.className = 'add-new-feed-btn';
-                addImgOnlyBtn.innerHTML = '<i class="fas fa-image"></i> 添加图片';
+                addImgOnlyBtn.innerHTML = '<i class="fas fa-image"></i> 图片';
                 addImgOnlyBtn.onclick = () => {
                     if(!document.body.classList.contains('edit-mode')) return;
                     feedsData.push({ type: 'img', text: '', img: '' });
@@ -882,7 +1078,7 @@
 
                 const addTextOnlyBtn = document.createElement('div');
                 addTextOnlyBtn.className = 'add-new-feed-btn';
-                addTextOnlyBtn.innerHTML = '<i class="fas fa-font"></i> 添加文字';
+                addTextOnlyBtn.innerHTML = '<i class="fas fa-font"></i> 文字';
                 addTextOnlyBtn.onclick = () => {
                     if(!document.body.classList.contains('edit-mode')) return;
                     feedsData.push({ type: 'text', text: '新的文字...', img: '' });
@@ -1020,7 +1216,7 @@
                 document.getElementById('textEditOverlay').classList.remove('active');
             };
 
-            // 监听文字输入 (用于直接在页面上修改的图文贴)
+            // 监听文字输入
             document.addEventListener('blur', function(e) {
                 const target = e.target;
                 if (target.hasAttribute('contenteditable') && target.getAttribute('contenteditable') === 'true') {
@@ -1035,7 +1231,6 @@
                     }
 
                     if (target.classList.contains('feed-text')) {
-                        // 如果是图文类型，允许直接修改
                         const postId = target.dataset.postid;
                         const index = parseInt(target.dataset.index);
                         let feedsData = getFeedsData(postId);
