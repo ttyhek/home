@@ -202,14 +202,27 @@
             background: rgba(255, 255, 255, 0.8); padding: 6px 12px;
             border-radius: var(--radius-pill); border: 1px solid #fff;
         }
-        .stat-number { font-weight: 800; font-size: 1rem; }
+        .stat-number { font-weight: 800; font-size: 1rem; outline: none; border-radius: 4px; padding: 0 4px; }
         .stat-label { color: var(--c-text-muted); font-size: 0.65rem; font-weight: 600; }
+        
+        body.edit-mode .stat-number {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px dashed var(--c-primary-light);
+            cursor: text;
+        }
 
         /* 用户信息 */
         .user-info { padding: 14px 20px 16px; }
         .display-name { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 6px; outline: none; border-radius: 8px; padding: 2px 6px; margin-left: -6px; transition: background 0.2s; }
         .username { color: var(--c-text-sub); font-size: 0.85rem; margin-top: 4px; outline: none; border-radius: 8px; padding: 2px 6px; margin-left: -6px; display: inline-block; transition: background 0.2s; }
         
+        /* 个性签名 */
+        .custom-signature {
+            margin-top: 8px; font-size: 0.85rem; color: var(--c-text-sub);
+            outline: none; border-radius: 8px; padding: 2px 6px; margin-left: -6px;
+            display: inline-block; transition: background 0.2s;
+        }
+
         .bio {
             margin-top: 12px; font-size: 0.85rem; line-height: 1.5;
             background: linear-gradient(to right, rgba(240, 248, 255, 0.8), rgba(240, 248, 255, 0.4));
@@ -222,6 +235,7 @@
         /* 编辑模式高亮 */
         body.edit-mode .display-name,
         body.edit-mode .username,
+        body.edit-mode .custom-signature,
         body.edit-mode .bio span,
         body.edit-mode .join-date {
             background: rgba(255, 255, 255, 0.6);
@@ -338,9 +352,7 @@
         .feed-text-edit-btn:hover { transform: scale(1.1); }
         body.edit-mode .feed-text-edit-btn { display: flex; }
 
-        /* =========================================
-           动态网格图片排版 (最多3张)
-           ========================================= */
+        /* 动态网格图片排版 (最多3张) */
         .feed-image-grid {
             display: grid;
             gap: 6px;
@@ -510,9 +522,7 @@
         }
         body.edit-mode .delete-feed-btn { display: block; }
 
-        /* =========================================
-           须知板块 (优化后)
-           ========================================= */
+        /* 须知板块 */
         .accordion-item { 
             background: #fff; 
             border-radius: 14px; 
@@ -542,7 +552,6 @@
             cursor: text;
         }
         
-        /* 须知提示图标 */
         .acc-hint-icon {
             display: none;
             color: var(--c-primary);
@@ -576,7 +585,6 @@
             cursor: text;
         }
         
-        /* 正文编辑提示 */
         .acc-desc-hint {
             display: none;
             position: absolute;
@@ -692,9 +700,7 @@
 
         .hidden-file { display: none; }
 
-        /* =========================================
-           全屏图片预览（支持左右滑动）
-           ========================================= */
+        /* 全屏图片预览 */
         .image-preview-overlay {
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95);
             display: none; flex-direction: column; justify-content: center; align-items: center;
@@ -767,6 +773,7 @@
             .user-info { padding: 12px 16px 14px; }
             .display-name { font-size: 1.3rem; }
             .username { font-size: 0.8rem; }
+            .custom-signature { font-size: 0.8rem; }
             .bio { font-size: 0.8rem; gap: 8px 12px; padding: 10px 12px; }
             .join-date { gap: 8px; font-size: 0.7rem; margin-top: 8px; }
             
@@ -863,9 +870,18 @@
             </div>
 
             <div class="profile-stats">
-                <div class="stat-item"><span class="stat-number">358</span><span class="stat-label">关注</span></div>
-                <div class="stat-item"><span class="stat-number">2.4k</span><span class="stat-label">粉丝</span></div>
-                <div class="stat-item"><span class="stat-number">178</span><span class="stat-label">帖子</span></div>
+                <div class="stat-item">
+                    <span class="stat-number" id="statFollowing" contenteditable="false">358</span>
+                    <span class="stat-label">关注</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="statFollowers" contenteditable="false">2.4k</span>
+                    <span class="stat-label">粉丝</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="statPosts">0</span>
+                    <span class="stat-label">帖子</span>
+                </div>
             </div>
         </div>
 
@@ -873,6 +889,9 @@
             <div class="display-name" id="editName" contenteditable="false">琥珀 <i class="fas fa-certificate" style="color:var(--c-primary)"></i></div>
             <div class="username" id="editUsername" contenteditable="false"><i class="fas fa-at"></i> <span id="usernameDisplay">amber_starry</span></div>
             
+            <!-- 个性签名 -->
+            <div class="custom-signature" id="editSignature" contenteditable="false">半生漂泊，半生寻觅。</div>
+
             <div class="bio" id="editBio">
                 <span contenteditable="false"><i class="fas fa-birthday-cake"></i> 21岁</span>
                 <span contenteditable="false"><i class="fas fa-star"></i> 双鱼座</span>
@@ -936,6 +955,7 @@
         <div class="end-note"><i class="fas fa-circle"></i> 已经到底了</div>
     </div>
 
+    <!-- 密码验证弹窗 -->
     <div class="pwd-overlay" id="pwdOverlay">
         <div class="pwd-card">
             <div class="pwd-icon"><i class="fas fa-lock"></i></div>
@@ -1001,9 +1021,7 @@
 
     <div class="image-preview-overlay" id="imagePreviewOverlay">
         <div class="preview-close-btn" onclick="closeImagePreview()"><i class="fas fa-times"></i></div>
-        <div class="preview-container" id="previewContainer">
-            <!-- 由 JS 动态生成图片 slide -->
-        </div>
+        <div class="preview-container" id="previewContainer"></div>
         <div class="preview-indicator" id="previewIndicator"></div>
     </div>
 
@@ -1094,7 +1112,7 @@
                 document.getElementById('musicArtistDisplay').textContent = localStorage.getItem('amber_music_artist') || '未知歌手';
             }
 
-            // ================= 多图全屏预览逻辑 =================
+            // ================= 多图全屏预览 =================
             const imagePreviewOverlay = document.getElementById('imagePreviewOverlay');
             const previewContainer = document.getElementById('previewContainer');
             const previewIndicator = document.getElementById('previewIndicator');
@@ -1122,7 +1140,6 @@
                 }, 50);
 
                 previewContainer.onscroll = updateIndicator;
-
                 imagePreviewOverlay.classList.add('active');
             };
 
@@ -1190,10 +1207,8 @@
                             const canvas = document.createElement('canvas');
                             canvas.width = width;
                             canvas.height = height;
-
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
-
                             const base64 = canvas.toDataURL('image/jpeg', quality);
                             resolve(base64);
                         };
@@ -1248,6 +1263,15 @@
                 });
                 saveFeedsData(postId, feedsData);
                 return feedsData;
+            }
+
+            // 更新帖子数统计
+            function updatePostCount() {
+                const dailyPosts = getFeedsData('feed-post-1') || [];
+                const countEl = document.getElementById('statPosts');
+                if (countEl) {
+                    countEl.textContent = dailyPosts.length;
+                }
             }
 
             function renderFeeds(postId, containerId, defaultData) {
@@ -1310,21 +1334,19 @@
                         
                         textWrapper.appendChild(textDiv);
 
-                        if (item.type === 'text' || index === 0) {
-                            const editBtn = document.createElement('div');
-                            editBtn.className = 'feed-text-edit-btn';
-                            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
-                            editBtn.title = '点击修改文字';
-                            editBtn.onclick = (e) => {
-                                e.stopPropagation();
-                                if (!document.body.classList.contains('edit-mode')) return;
-                                currentEditingPostId = postId;
-                                currentEditingIndex = index;
-                                document.getElementById('textEditArea').value = item.text || '';
-                                document.getElementById('textEditOverlay').classList.add('active');
-                            };
-                            textWrapper.appendChild(editBtn);
-                        }
+                        const editBtn = document.createElement('div');
+                        editBtn.className = 'feed-text-edit-btn';
+                        editBtn.innerHTML = '<i class="fas fa-pen"></i>';
+                        editBtn.title = '点击修改文字';
+                        editBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            if (!document.body.classList.contains('edit-mode')) return;
+                            currentEditingPostId = postId;
+                            currentEditingIndex = index;
+                            document.getElementById('textEditArea').value = item.text || '';
+                            document.getElementById('textEditOverlay').classList.add('active');
+                        };
+                        textWrapper.appendChild(editBtn);
 
                         feedItem.appendChild(textWrapper);
                     }
@@ -1390,7 +1412,6 @@
                                     };
                                     imgItem.appendChild(overlay);
 
-                                    // 删除图片按钮
                                     const delImgBtn = document.createElement('div');
                                     delImgBtn.className = 'img-delete-btn';
                                     delImgBtn.innerHTML = '<i class="fas fa-times"></i>';
@@ -1402,6 +1423,7 @@
                                             feedsData[index].img.splice(imgIdx, 1);
                                             saveFeedsData(postId, feedsData);
                                             renderFeeds(postId, containerId);
+                                            if (postId === 'feed-post-1') updatePostCount();
                                         }
                                     };
                                     imgItem.appendChild(delImgBtn);
@@ -1441,6 +1463,7 @@
                                 feedsData.splice(index, 1);
                                 saveFeedsData(postId, feedsData);
                                 renderFeeds(postId, containerId); 
+                                if (postId === 'feed-post-1') updatePostCount();
                             }
                         };
                         feedItem.appendChild(deleteBtn);
@@ -1460,6 +1483,7 @@
                     feedsData.push({ type: 'text-img', text: '新的文案...', img: [], timestamp: Date.now() });
                     saveFeedsData(postId, feedsData);
                     renderFeeds(postId, containerId);
+                    if (postId === 'feed-post-1') updatePostCount();
                 };
                 addActions.appendChild(addTextImgBtn);
 
@@ -1471,6 +1495,7 @@
                     feedsData.push({ type: 'img', text: '', img: [], timestamp: Date.now() });
                     saveFeedsData(postId, feedsData);
                     renderFeeds(postId, containerId);
+                    if (postId === 'feed-post-1') updatePostCount();
                 };
                 addActions.appendChild(addImgOnlyBtn);
 
@@ -1482,6 +1507,7 @@
                     feedsData.push({ type: 'text', text: '新的文字...', img: [], timestamp: Date.now() });
                     saveFeedsData(postId, feedsData);
                     renderFeeds(postId, containerId);
+                    if (postId === 'feed-post-1') updatePostCount();
                 };
                 addActions.appendChild(addTextOnlyBtn);
 
@@ -1490,6 +1516,7 @@
 
             function initAllFeeds() {
                 renderFeeds('feed-post-1', 'feed-post-1');
+                updatePostCount(); // 首次渲染时同步统计
 
                 const defaultDataMap = {
                     'feed-post-3': [
@@ -1553,7 +1580,6 @@
                     title.setAttribute('contenteditable', 'false');
                     title.innerText = item.title;
                     
-                    // 标题编辑提示
                     const titleHint = document.createElement('i');
                     titleHint.className = 'fas fa-pen acc-hint-icon';
                     title.appendChild(titleHint);
@@ -1584,7 +1610,6 @@
                     desc.setAttribute('contenteditable', 'false');
                     desc.innerHTML = item.content;
                     
-                    // 内容编辑提示
                     const descHint = document.createElement('div');
                     descHint.className = 'acc-desc-hint';
                     descHint.innerHTML = '<i class="fas fa-pen"></i> 点击修改';
@@ -1625,24 +1650,52 @@
 
             // ================= 初始化加载与模式切换 =================
             function loadSavedData() {
-                const textElems = ['editName', 'editBio', 'editJoinDate', 'desc1', 'desc2'];
-                textElems.forEach(id => {
-                    const saved = localStorage.getItem('amber_' + id);
-                    if (saved) {
-                        const el = document.getElementById(id);
-                        if(el) el.innerHTML = saved;
-                    }
-                });
+                // 加载个人信息
+                const nameEl = document.getElementById('editName');
+                const nameSaved = localStorage.getItem('amber_editName');
+                if (nameSaved) {
+                    nameEl.innerHTML = nameSaved;
+                }
 
-                const savedUsername = localStorage.getItem('amber_username_sync');
-                if (savedUsername) {
-                    document.getElementById('usernameDisplay').textContent = savedUsername;
-                    syncUsername(savedUsername);
+                const bioEl = document.getElementById('editBio');
+                const bioSaved = localStorage.getItem('amber_editBio');
+                if (bioSaved) {
+                    bioEl.innerHTML = bioSaved;
+                }
+
+                const signatureEl = document.getElementById('editSignature');
+                const signatureSaved = localStorage.getItem('amber_editSignature');
+                if (signatureSaved) {
+                    signatureEl.innerText = signatureSaved;
+                }
+
+                const joinEl = document.getElementById('editJoinDate');
+                const joinSaved = localStorage.getItem('amber_editJoinDate');
+                if (joinSaved) {
+                    joinEl.innerHTML = joinSaved;
+                }
+
+                // 加载关注和粉丝数
+                const savedFollowing = localStorage.getItem('amber_stat_following');
+                if (savedFollowing) {
+                    document.getElementById('statFollowing').textContent = savedFollowing;
+                }
+                const savedFollowers = localStorage.getItem('amber_stat_followers');
+                if (savedFollowers) {
+                    document.getElementById('statFollowers').textContent = savedFollowers;
+                }
+                
+                // 加载用户名
+                const usernameSaved = localStorage.getItem('amber_username_sync');
+                if (usernameSaved) {
+                    document.getElementById('usernameDisplay').textContent = usernameSaved;
+                    syncUsername(usernameSaved);
                 } else {
                     const defaultName = document.getElementById('usernameDisplay').textContent;
                     syncUsername(defaultName);
                 }
 
+                // 加载封面和头像
                 const savedCover = localStorage.getItem('amber_cover_bg');
                 if (savedCover) {
                     document.getElementById('profileCover').style.backgroundImage = `url(${savedCover})`;
@@ -1738,6 +1791,7 @@
                 const target = e.target;
                 if (target.hasAttribute('contenteditable') && target.getAttribute('contenteditable') === 'true') {
                     
+                    // 用户名
                     if (target.id === 'editUsername') {
                         const rawText = target.innerText.replace('@', '').trim();
                         if (rawText === '') return;
@@ -1747,6 +1801,42 @@
                         return;
                     }
 
+                    // 姓名
+                    if (target.id === 'editName') {
+                        localStorage.setItem('amber_editName', target.innerHTML);
+                        return;
+                    }
+
+                    // 个性签名
+                    if (target.id === 'editSignature') {
+                        localStorage.setItem('amber_editSignature', target.innerText);
+                        return;
+                    }
+
+                    // 个人信息
+                    if (target.id === 'editBio') {
+                        localStorage.setItem('amber_editBio', target.innerHTML);
+                        return;
+                    }
+
+                    // 加入信息
+                    if (target.id === 'editJoinDate') {
+                        localStorage.setItem('amber_editJoinDate', target.innerHTML);
+                        return;
+                    }
+
+                    // 关注数和粉丝数
+                    if (target.id === 'statFollowing') {
+                        localStorage.setItem('amber_stat_following', target.innerText);
+                        return;
+                    }
+
+                    if (target.id === 'statFollowers') {
+                        localStorage.setItem('amber_stat_followers', target.innerText);
+                        return;
+                    }
+
+                    // 帖子文案
                     if (target.classList.contains('feed-text')) {
                         const postId = target.dataset.postid;
                         const index = parseInt(target.dataset.index);
@@ -1762,10 +1852,6 @@
                             saveFeedsData(postId, feedsData);
                         }
                         return;
-                    }
-
-                    if (target.id) {
-                        localStorage.setItem('amber_' + target.id, target.innerHTML);
                     }
                 }
             }, true);
@@ -1794,7 +1880,7 @@
                 const file = e.target.files[0];
                 if (!file) return;
                 try {
-                    const base64 = await compressImage(file, 300, 300); // 头像压缩得更小
+                    const base64 = await compressImage(file, 300, 300);
                     const mainAvImg = document.getElementById('mainAvatarImg');
                     mainAvImg.src = base64;
                     document.getElementById('mainAvatar').classList.add('has-img');
@@ -1852,7 +1938,6 @@
                         saveFeedsData(postId, feedsData);
                         renderFeeds(postId, postId);
                         
-                        // 弹窗提示上传成功
                         const newCount = feedsData[currentPostIndex].img.length;
                         if (newCount >= 3) {
                             alert(`已上传满 3 张图片，无法继续上传更多图片。`);
