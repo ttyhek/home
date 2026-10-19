@@ -83,12 +83,12 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
-        /* 封面背景（自动填充 cover） */
+        /* 封面背景 */
         .profile-cover {
             height: 150px;
             background: #e2e8f0;
             position: relative; 
-            background-size: cover; /* 改为 cover 铺满 */
+            background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             transition: all 0.2s;
@@ -174,16 +174,14 @@
         body.edit-mode .display-name,
         body.edit-mode .username,
         body.edit-mode .bio span,
-        body.edit-mode .join-date,
-        body.edit-mode .post-text,
-        body.edit-mode .post-name {
+        body.edit-mode .join-date {
             background: rgba(255, 255, 255, 0.6);
             border: 1px dashed var(--c-primary-light);
             box-shadow: 0 0 0 2px rgba(107, 155, 210, 0.1);
             cursor: text;
         }
 
-        /* 标签页 (均匀分布，不滑动) */
+        /* 标签页 */
         .profile-tabs {
             display: flex; border-bottom: 1px solid var(--c-border); padding: 0 8px;
             background: rgba(255, 255, 255, 0.8); position: sticky; top: 60px; z-index: 15; backdrop-filter: blur(8px);
@@ -202,7 +200,7 @@
 
         .panel-scroll { padding: 16px 16px 30px; }
 
-        /* ===== 统一的图文流样式 ===== */
+        /* ===== 图文流样式 ===== */
         .design-post {
             background: transparent; 
             border-radius: 0; 
@@ -215,11 +213,8 @@
 
         .feed-item {
             display: flex; flex-direction: column; gap: 10px;
-            padding: 16px;
-            background: #fff;
-            border-radius: 16px;
-            border: 1px solid var(--c-border);
-            box-shadow: var(--shadow-sm);
+            padding: 12px 0; 
+            border-bottom: 1px dashed var(--c-border); 
         }
 
         .feed-header {
@@ -256,21 +251,53 @@
             color: var(--c-text-muted); font-size: 0.7rem; margin-left: auto;
         }
 
+        /* 帖子文案展示与编辑 */
+        .feed-text-wrapper {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            width: 100%;
+        }
+
         .feed-text {
             font-size: 0.85rem; line-height: 1.6; color: var(--c-text-main);
             outline: none; padding: 4px; border-radius: 4px; margin-bottom: 4px;
+            flex: 1;
         }
+
+        body.edit-mode .feed-text {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px dashed var(--c-primary-light);
+            box-shadow: 0 0 0 2px rgba(107, 155, 210, 0.1);
+            cursor: text;
+        }
+
+        /* 纯文字贴的编辑图标提示 */
+        .feed-text-edit-btn {
+            display: none;
+            background: var(--c-primary);
+            color: #fff;
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            align-items: center; justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+        }
+        .feed-text-edit-btn:hover { transform: scale(1.1); }
+        body.edit-mode .feed-text-edit-btn { display: flex; }
 
         .feed-image-wrapper {
             width: 100%;
-            border-radius: 10px;
-            background-color: #f0f4f8;
             position: relative;
-            overflow: hidden;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
         }
         
         .feed-image-wrapper img {
@@ -278,20 +305,26 @@
             height: auto;
             display: block;
             object-fit: contain;
-            max-height: 400px; 
+            max-height: none; 
+            border-radius: 8px;
         }
 
-        /* 图片占位提示（仅编辑模式显示） */
+        /* 图片占位提示 */
         .img-placeholder {
             display: none; 
             flex-direction: column; align-items: center; justify-content: center;
-            padding: 30px 16px; color: var(--c-primary-dark); font-weight: 600;
+            width: 100%;
+            padding: 40px 16px; 
+            border: 1px dashed var(--c-primary-light);
+            border-radius: 12px;
+            color: var(--c-primary-dark); font-weight: 600;
             pointer-events: none; font-size: 0.85rem;
+            background: rgba(245, 249, 255, 0.3);
         }
         .img-placeholder i { font-size: 1.5rem; margin-bottom: 6px; }
         body.edit-mode .img-placeholder { display: flex; }
 
-        /* 添加按钮容器（仅编辑模式显示） */
+        /* 添加按钮 */
         .add-actions {
             display: none; 
             gap: 10px;
@@ -319,7 +352,7 @@
         }
         body.edit-mode .delete-feed-btn { display: block; }
 
-        /* 图片上传遮罩（仅编辑模式显示） */
+        /* 图片上传遮罩 */
         .img-edit-overlay {
             position: absolute; inset: 0; border-radius: inherit;
             background: rgba(0,0,0,0.4); color: white;
@@ -354,7 +387,7 @@
 
         .end-note { text-align: center; padding: 20px 0 40px; color: var(--c-text-muted); font-size: 0.75rem; }
 
-        /* 弹窗适配 */
+        /* 弹窗通用 */
         .pwd-overlay {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center;
@@ -379,9 +412,28 @@
         .pwd-error.show { display: block; animation: shake 0.3s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
+        /* 文字编辑弹窗特殊样式 */
+        .edit-text-modal textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 2px solid var(--c-border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            resize: none;
+            margin-bottom: 16px;
+            font-family: inherit;
+            line-height: 1.5;
+            color: var(--c-text-main);
+        }
+        .edit-text-modal textarea:focus {
+            border-color: var(--c-primary);
+        }
+
         .hidden-file { display: none; }
 
-        /* 手机端专门适配 */
+        /* 手机端适配 */
         @media (max-width: 500px) {
             .navbar { padding: 12px 16px; }
             .profile-cover { height: 120px; }
@@ -402,13 +454,12 @@
             
             .panel-scroll { padding: 12px 12px 30px; }
             
-            .feed-item { padding: 12px; gap: 8px; }
+            .feed-item { padding: 10px 0; gap: 8px; }
             .feed-avatar { width: 36px; height: 36px; }
             .feed-name { font-size: 0.85rem; }
             .feed-username { font-size: 0.65rem; }
             .feed-time { font-size: 0.65rem; }
             .feed-text { font-size: 0.8rem; margin-bottom: 2px; }
-            .feed-image-wrapper img { max-height: 300px; }
             
             .accordion-header { padding: 12px; gap: 10px; }
             .accordion-icon { width: 26px; height: 26px; font-size: 0.8rem; }
@@ -431,7 +482,6 @@
             .pwd-btn { font-size: 0.8rem; padding: 8px; }
         }
 
-        /* 极小屏幕 */
         @media (max-width: 360px) {
             .display-name { font-size: 1.1rem; }
             .profile-stats { gap: 4px; }
@@ -597,6 +647,20 @@
         </div>
     </div>
 
+    <!-- 纯文字修改专用弹窗 -->
+    <div class="pwd-overlay" id="textEditOverlay">
+        <div class="pwd-card edit-text-modal">
+            <div class="pwd-icon"><i class="fas fa-pen-nib"></i></div>
+            <div class="pwd-title">修改文字内容</div>
+            <div class="pwd-desc">请在此处输入您的文字</div>
+            <textarea id="textEditArea" placeholder="输入文字..."></textarea>
+            <div class="pwd-actions">
+                <button class="pwd-btn pwd-btn-cancel" onclick="document.getElementById('textEditOverlay').classList.remove('active')">取消</button>
+                <button class="pwd-btn pwd-btn-confirm" onclick="saveTextOnlyEdit()">保存修改</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 全局图片上传组件 -->
     <input type="file" id="globalImgInput" accept="image/*" class="hidden-file">
     
@@ -604,6 +668,10 @@
         (function() {
             let currentUploadTargetId = null;
             let currentUploadStorageKey = null;
+            
+            // 用于记录当前正在编辑的纯文字帖子的位置
+            let currentEditingPostId = null;
+            let currentEditingIndex = null;
             
             const SECRET_KEY = '3344';
 
@@ -671,7 +739,7 @@
                     const feedItem = document.createElement('div');
                     feedItem.className = 'feed-item';
 
-                    // 头部信息 (包含头像)
+                    // 头部信息
                     const headerDiv = document.createElement('div');
                     headerDiv.className = 'feed-header';
                     
@@ -705,18 +773,44 @@
 
                     feedItem.appendChild(headerDiv);
 
-                    // 文案
+                    // 文案区 (包含一个针对纯文字的快捷编辑按钮)
                     if (item.type === 'text-img' || item.type === 'text') {
+                        const textWrapper = document.createElement('div');
+                        textWrapper.className = 'feed-text-wrapper';
+
                         const textDiv = document.createElement('div');
                         textDiv.className = 'feed-text';
                         textDiv.setAttribute('contenteditable', 'false');
                         textDiv.dataset.postid = postId;
                         textDiv.dataset.index = index;
                         textDiv.innerText = item.text || '在这里输入文案...';
-                        feedItem.appendChild(textDiv);
+                        
+                        // 如果是图文模式，直接点击文本可编辑（在编辑模式下）
+                        // 如果是纯文本模式，为了不误触，且按要求“点击提示按钮修改”，我们为它加上旁边的编辑图标。
+                        textWrapper.appendChild(textDiv);
+
+                        // 纯文字专属的编辑按钮
+                        if (item.type === 'text') {
+                            const editBtn = document.createElement('div');
+                            editBtn.className = 'feed-text-edit-btn';
+                            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
+                            editBtn.title = '点击修改文字';
+                            editBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                if (!document.body.classList.contains('edit-mode')) return;
+                                // 弹出弹窗修改
+                                currentEditingPostId = postId;
+                                currentEditingIndex = index;
+                                document.getElementById('textEditArea').value = item.text || '';
+                                document.getElementById('textEditOverlay').classList.add('active');
+                            };
+                            textWrapper.appendChild(editBtn);
+                        }
+
+                        feedItem.appendChild(textWrapper);
                     }
 
-                    // 图片区 (如果类型不是 text)
+                    // 图片区
                     if (item.type !== 'text') {
                         const imgWrapper = document.createElement('div');
                         imgWrapper.className = 'feed-image-wrapper';
@@ -738,7 +832,7 @@
                         feedItem.appendChild(imgWrapper);
                     }
 
-                    // 删除按钮
+                    // 删除按钮（带二次确认）
                     if(feedsData.length > 1) {
                         const deleteBtn = document.createElement('div');
                         deleteBtn.className = 'delete-feed-btn';
@@ -746,7 +840,9 @@
                         deleteBtn.onclick = (e) => {
                             e.stopPropagation();
                             if(!document.body.classList.contains('edit-mode')) return;
-                            if(confirm('确定要删除这组图文吗？')) {
+                            
+                            // 二次确认弹窗
+                            if(confirm('确定要删除这组图文吗？删除后不可恢复。')) {
                                 feedsData.splice(index, 1);
                                 saveFeedsData(postId, feedsData);
                                 renderFeeds(postId, containerId); 
@@ -762,7 +858,6 @@
                 const addActions = document.createElement('div');
                 addActions.className = 'add-actions';
 
-                // 添加图文
                 const addTextImgBtn = document.createElement('div');
                 addTextImgBtn.className = 'add-new-feed-btn';
                 addTextImgBtn.innerHTML = '<i class="fas fa-edit"></i> 添加图文';
@@ -774,7 +869,6 @@
                 };
                 addActions.appendChild(addTextImgBtn);
 
-                // 添加纯图片
                 const addImgOnlyBtn = document.createElement('div');
                 addImgOnlyBtn.className = 'add-new-feed-btn';
                 addImgOnlyBtn.innerHTML = '<i class="fas fa-image"></i> 添加图片';
@@ -786,7 +880,6 @@
                 };
                 addActions.appendChild(addImgOnlyBtn);
 
-                // 添加纯文字
                 const addTextOnlyBtn = document.createElement('div');
                 addTextOnlyBtn.className = 'add-new-feed-btn';
                 addTextOnlyBtn.innerHTML = '<i class="fas fa-font"></i> 添加文字';
@@ -913,7 +1006,21 @@
             document.getElementById('pwdCancel').addEventListener('click', () => pwdOverlay.classList.remove('active'));
             pwdInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('pwdConfirm').click(); });
 
-            // 监听文字输入
+            // 纯文字修改保存
+            window.saveTextOnlyEdit = function() {
+                const newText = document.getElementById('textEditArea').value;
+                if (currentEditingPostId !== null && currentEditingIndex !== null) {
+                    let feedsData = getFeedsData(currentEditingPostId);
+                    if(feedsData && feedsData[currentEditingIndex]) {
+                        feedsData[currentEditingIndex].text = newText;
+                        saveFeedsData(currentEditingPostId, feedsData);
+                        renderFeeds(currentEditingPostId, currentEditingPostId);
+                    }
+                }
+                document.getElementById('textEditOverlay').classList.remove('active');
+            };
+
+            // 监听文字输入 (用于直接在页面上修改的图文贴)
             document.addEventListener('blur', function(e) {
                 const target = e.target;
                 if (target.hasAttribute('contenteditable') && target.getAttribute('contenteditable') === 'true') {
@@ -928,10 +1035,11 @@
                     }
 
                     if (target.classList.contains('feed-text')) {
+                        // 如果是图文类型，允许直接修改
                         const postId = target.dataset.postid;
                         const index = parseInt(target.dataset.index);
                         let feedsData = getFeedsData(postId);
-                        if(feedsData && feedsData[index]) {
+                        if(feedsData && feedsData[index] && feedsData[index].type !== 'text') {
                             feedsData[index].text = target.innerText;
                             saveFeedsData(postId, feedsData);
                         }
@@ -979,7 +1087,6 @@
                     
                     try { localStorage.setItem('amber_main_avatar', base64); } catch(err) { alert('图片太大，无法保存'); }
                     
-                    // 上传头像后重新渲染所有动态帖子，让所有帖子头像同步
                     initAllFeeds();
                 };
                 reader.readAsDataURL(file);
@@ -1005,7 +1112,6 @@
                         let feedsData = getFeedsData(postId);
                         if(feedsData && feedsData[index]) {
                             feedsData[index].img = base64;
-                            // 如果原本是纯文字，上传图片后自动转为图文格式
                             if (feedsData[index].type === 'text') {
                                 feedsData[index].type = 'text-img';
                             }
