@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Amber's Starry Sky</title>
+    <title>星海独立密钥 · 琥珀</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -1039,11 +1039,11 @@
 
     <div class="pwd-overlay" id="pwdOverlay">
         <div class="pwd-card">
-            <div class="pwd-icon"><i class="fas fa-lock"></i></div>
-            <div class="pwd-title">输入编辑密钥</div>
-            <div class="pwd-desc">请输入密钥以切换到编辑模式，不同密钥对应独立内容空间</div>
-            <input type="password" class="pwd-input" id="pwdInput" placeholder="••••" maxlength="8">
-            <div class="pwd-error" id="pwdError">密钥错误，请重试</div>
+            <div class="pwd-icon"><i class="fas fa-key"></i></div>
+            <div class="pwd-title">输入密钥</div>
+            <div class="pwd-desc">每个密钥对应独立内容（如 2121）</div>
+            <input type="password" class="pwd-input" id="pwdInput" placeholder="••••" maxlength="20">
+            <div class="pwd-error" id="pwdError">密钥不能为空</div>
             <div class="pwd-actions">
                 <button class="pwd-btn pwd-btn-cancel" id="pwdCancel">取消</button>
                 <button class="pwd-btn pwd-btn-confirm" id="pwdConfirm">确认</button>
@@ -1069,11 +1069,11 @@
         <div class="pwd-card music-config-modal">
             <div class="pwd-icon"><i class="fas fa-music"></i></div>
             <div class="pwd-title">配置网易云音乐</div>
-            <div class="pwd-desc">粘贴网易云音乐分享链接，一键识别</div>
-            <div class="link-hint"><i class="fas fa-link"></i> 仅支持网易云分享链接：music.163.com 完整链接 / 163cn.tv 短链 / App 分享文本（含链接），粘贴后自动填入歌名与歌手</div>
+            <div class="pwd-desc">粘贴歌曲ID、链接或整段分享文本，一键识别</div>
+            <div class="link-hint"><i class="fas fa-magic"></i> 支持格式：歌曲ID / music.163.com 完整链接 / App 分享文本（含《歌名》）/ 163cn.tv 短链接，粘贴后自动填入歌名与歌手</div>
 
-            <label>网易云分享链接</label>
-            <input type="text" class="pwd-input" id="configMusicId" placeholder="粘贴分享链接，如 https://music.163.com/song?id=29722012">
+            <label>网易云音乐ID/链接/分享文本</label>
+            <input type="text" class="pwd-input" id="configMusicId" placeholder="例如：29722012 或 粘贴分享链接">
 
             <label>歌曲名称</label>
             <input type="text" class="pwd-input" id="configMusicTitle" placeholder="新地球">
@@ -1113,6 +1113,48 @@
 
     <script>
         (function() {
+            // ================= 密钥与命名空间 =================
+            // 任何非空密钥均可，但 2121 是保留的“琥珀”默认密钥。
+            // 每个密钥对应独立的 localStorage 前缀，互不干扰。
+            let CURRENT_KEY = '2121';     // 当前激活的密钥，默认 2121
+            let NS = 'amber_2121_';       // 命名空间前缀，随密钥变化
+
+            function getNamespace(key) {
+                return 'amber_' + key + '_';
+            }
+
+            function setCurrentKey(key) {
+                CURRENT_KEY = key;
+                NS = getNamespace(key);
+                // 更新所有与密钥相关的存储访问
+                // 无需额外操作，所有存储函数都使用 NS 前缀
+            }
+
+            // 重新加载用户数据（切换密钥后调用）
+            async function reloadAllData() {
+                // 清空当前界面再加载
+                loadSavedData();
+                initAllFeeds();
+                renderAccordion();
+                // 音乐配置独立于密钥（但也可以跟随密钥，这里保持音乐全局，因为音乐只是一个小功能，但为了完全隔离，也使用 NS）
+                // 为了方便，音乐也纳入命名空间，重新加载
+                const savedMusicId = localStorage.getItem(NS + 'music_id');
+                if (savedMusicId) {
+                    bgMusic.src = `https://music.163.com/song/media/outer/url?id=${savedMusicId}.mp3`;
+                    document.getElementById('musicTitleDisplay').textContent = localStorage.getItem(NS + 'music_title') || '未知歌曲';
+                    document.getElementById('musicArtistDisplay').textContent = localStorage.getItem(NS + 'music_artist') || '未知歌手';
+                } else {
+                    // 默认音乐
+                    bgMusic.src = `https://music.163.com/song/media/outer/url?id=29722012.mp3`;
+                    document.getElementById('musicTitleDisplay').textContent = '新地球';
+                    document.getElementById('musicArtistDisplay').textContent = '林俊杰';
+                }
+                // 音乐播放状态重置
+                bgMusic.pause();
+                isPlaying = false;
+                musicIcon.className = 'fas fa-play';
+            }
+
             // ================= 文本链接转换工具 =================
             function linkify(text) {
                 const urlRegex = /((https?:\/\/)[^\s]+)/g;
@@ -1120,49 +1162,6 @@
                     return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
                 });
             }
-
-            // ================= 多用户密钥与存储命名空间 =================
-            // 在此数组中添加新密钥，即可为新用户开通独立内容空间（互不干扰）
-            const SECRET_KEYS = ['2121', '3344'];
-            let currentKey = localStorage.getItem('amber_current_key') || null;
-
-            // 按当前密钥生成存储键名，实现各密钥数据隔离
-            function lsKey(name) { return currentKey ? ('amber_' + currentKey + '_' + name) : ('amber_' + name); }
-            function lsGet(name) { return localStorage.getItem(lsKey(name)); }
-            function lsSet(name, val) { localStorage.setItem(lsKey(name), val); }
-
-            // 旧版全局数据迁移：无密钥前缀的历史数据自动归入 3344 空间
-            (function migrateLegacyData() {
-                if (localStorage.getItem('amber_current_key')) return;
-                const legacyKeys = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const k = localStorage.key(i);
-                    if (/^amber_/.test(k) && k !== 'amber_current_key' && !/^amber_(3344|2121)_/.test(k)) {
-                        legacyKeys.push(k);
-                    }
-                }
-                if (legacyKeys.length > 0) {
-                    legacyKeys.forEach(function(k) {
-                        const newName = 'amber_3344_' + k.slice(6);
-                        if (localStorage.getItem(newName) === null) {
-                            localStorage.setItem(newName, localStorage.getItem(k));
-                        }
-                    });
-                    localStorage.setItem('amber_current_key', '3344');
-                    currentKey = '3344';
-                }
-            })();
-
-            // 页面默认内容快照（切换到无数据的空间时用于还原）
-            const DEFAULT_PROFILE = {
-                name: document.getElementById('editName').innerHTML,
-                bio: document.getElementById('editBio').innerHTML,
-                signature: document.getElementById('editSignature').innerText,
-                join: document.getElementById('editJoinDate').innerHTML,
-                following: document.getElementById('statFollowing').textContent,
-                followers: document.getElementById('statFollowers').textContent,
-                username: document.getElementById('usernameDisplay').textContent
-            };
 
             // ================= 音乐 =================
             const bgMusic = document.getElementById('bgMusic');
@@ -1203,7 +1202,6 @@
             bgMusic.addEventListener('play', () => { musicIcon.className = 'fas fa-pause'; isPlaying = true; });
             bgMusic.addEventListener('pause', () => { musicIcon.className = 'fas fa-play'; isPlaying = false; });
 
-            // 音乐加载失败提示（如版权受限）
             bgMusic.addEventListener('error', function() {
                 const t = document.getElementById('musicTitleDisplay');
                 if (t && !t.textContent.includes('⚠️')) {
@@ -1212,23 +1210,19 @@
                 }
             });
 
-            // ============ 网易云分享链接解析（仅限网易云链接） ============
-            function isNeteaseShareLink(inputVal) {
-                return /music\.163\.com|163cn\.tv/i.test(inputVal);
-            }
-
+            // ============ 网易云输入解析 ============
             function parseNeteaseInput(inputVal) {
                 let id = null, title = null, artist = null;
-                // 1. 歌名：《...》
                 const tm = inputVal.match(/《(.+?)》/);
                 if (tm) title = tm[1];
-                // 2. 歌手：「分享xxx的单曲」或「xxx的单曲」
                 const am = inputVal.match(/分享\s*(.+?)\s*的单曲/) || inputVal.match(/([\u4e00-\u9fa5A-Za-z0-9_·\-]+)的单曲/);
                 if (am) artist = am[1];
-                // 3. 常规链接参数 id=
-                const im = inputVal.match(/[?&]id=(\d+)/);
-                if (im) id = im[1];
-                // 4. path 形式 /song/123456 或 /outchain/...
+                const trimmed = inputVal.trim();
+                if (/^\d{4,}$/.test(trimmed)) id = trimmed;
+                if (!id) {
+                    const im = inputVal.match(/[?&]id=(\d+)/);
+                    if (im) id = im[1];
+                }
                 if (!id) {
                     const pm = inputVal.match(/music\.163\.com(?:\/#)?\/(?:song|outchain\/[0-9a-zA-Z]+)\/(\d+)/);
                     if (pm) id = pm[1];
@@ -1236,7 +1230,6 @@
                 return { id: id, title: title, artist: artist };
             }
 
-            // 短链接（163cn.tv）解析：浏览器跨域受限，依次尝试多个公共代理尽力解析
             async function resolveShortLink(shortUrl) {
                 const fullUrl = /^https?:\/\//.test(shortUrl) ? shortUrl : ('https://' + shortUrl);
                 const enc = encodeURIComponent(fullUrl);
@@ -1261,14 +1254,12 @@
 
             musicEditHint.addEventListener('click', function() {
                 if(!document.body.classList.contains('edit-mode')) return;
-                const savedId = lsGet('music_id');
-                document.getElementById('configMusicId').value = savedId ? ('https://music.163.com/song?id=' + savedId) : '';
-                document.getElementById('configMusicTitle').value = lsGet('music_title') || '新地球';
-                document.getElementById('configMusicArtist').value = lsGet('music_artist') || '林俊杰';
+                document.getElementById('configMusicId').value = localStorage.getItem(NS + 'music_id') || '29722012';
+                document.getElementById('configMusicTitle').value = localStorage.getItem(NS + 'music_title') || '新地球';
+                document.getElementById('configMusicArtist').value = localStorage.getItem(NS + 'music_artist') || '林俊杰';
                 musicConfigOverlay.classList.add('active');
             });
 
-            // 粘贴/输入分享文本时，自动识别并回填歌名与歌手
             const configMusicIdInput = document.getElementById('configMusicId');
             function autoFillMusicMeta() {
                 const val = configMusicIdInput.value.trim();
@@ -1297,18 +1288,11 @@
                 const inputVal = configMusicIdInput.value.trim();
                 const titleEl = document.getElementById('configMusicTitle');
                 const artistEl = document.getElementById('configMusicArtist');
-                if (!inputVal) { alert('请粘贴网易云音乐分享链接'); return; }
-
-                // 仅限网易云分享链接
-                if (!isNeteaseShareLink(inputVal)) {
-                    alert('仅支持网易云音乐分享链接。\n请在网易云音乐 App 或网页中点击「分享」复制链接后粘贴。\n支持：music.163.com 完整链接 / 163cn.tv 短链 / 含链接的分享文本。');
-                    return;
-                }
+                if (!inputVal) { alert('请输入音乐 ID、链接或分享文本'); return; }
 
                 let parsed = parseNeteaseInput(inputVal);
                 let musicId = parsed.id;
 
-                // 短链接（163cn.tv）无法直接提取ID，尝试在线解析
                 if (!musicId) {
                     const shortMatch = inputVal.match(/163cn\.tv\/[A-Za-z0-9]+/);
                     if (shortMatch) {
@@ -1320,7 +1304,7 @@
                 }
 
                 if (!musicId) {
-                    alert('未能从该网易云分享链接中识别出歌曲ID。\n请确认链接完整（需包含歌曲ID），或改用 App 内「分享-复制链接」获取的完整链接。');
+                    alert('未能从输入中识别出歌曲ID。\n支持：纯ID / music.163.com 链接 / App分享文本 / 163cn.tv 短链。\n若为短链请确认网络可用，或改用完整链接。');
                     return;
                 }
 
@@ -1334,30 +1318,15 @@
                 titleDisplay.textContent = title;
                 titleDisplay.title = '';
                 document.getElementById('musicArtistDisplay').textContent = artist;
-                lsSet('music_id', musicId);
-                lsSet('music_title', title);
-                lsSet('music_artist', artist);
+                localStorage.setItem(NS + 'music_id', musicId);
+                localStorage.setItem(NS + 'music_title', title);
+                localStorage.setItem(NS + 'music_artist', artist);
 
                 isPlaying = false;
                 musicIcon.className = 'fas fa-play';
                 attemptPlay();
                 musicConfigOverlay.classList.remove('active');
             };
-
-            // 按当前密钥空间恢复背景音乐（登录/切换密钥后重新调用）
-            function restoreMusic() {
-                const savedMusicId = lsGet('music_id');
-                if (savedMusicId) {
-                    bgMusic.src = `https://music.163.com/song/media/outer/url?id=${savedMusicId}.mp3`;
-                    document.getElementById('musicTitleDisplay').textContent = lsGet('music_title') || '未知歌曲';
-                    document.getElementById('musicArtistDisplay').textContent = lsGet('music_artist') || '未知歌手';
-                } else {
-                    // 该空间未配置音乐时，恢复默认显示
-                    document.getElementById('musicTitleDisplay').textContent = '新地球';
-                    document.getElementById('musicArtistDisplay').textContent = '林俊杰';
-                }
-            }
-            restoreMusic();
 
             // ================= 多图全屏预览 =================
             const imagePreviewOverlay = document.getElementById('imagePreviewOverlay');
@@ -1397,7 +1366,6 @@
                 previewIndicator.textContent = '';
             };
 
-            // 屏蔽右键菜单和长按保存
             document.addEventListener('contextmenu', function(e) {
                 if (e.target.tagName === 'IMG') {
                     e.preventDefault();
@@ -1427,7 +1395,7 @@
                 document.querySelectorAll('.sync-username').forEach(el => {
                     el.textContent = '@' + newName;
                 });
-                lsSet('username_sync', newName);
+                localStorage.setItem(NS + 'username_sync', newName);
                 document.title = newName + "'s Starry Sky";
             }
 
@@ -1471,14 +1439,14 @@
                 });
             }
 
-            // ================= 帖子数据与渲染 =================
+            // ================= 帖子数据与渲染 (全部使用 NS 命名空间) =================
             function getFeedsData(postId) {
-                const data = lsGet('feeds_' + postId);
+                const data = localStorage.getItem(NS + 'feeds_' + postId);
                 return data ? JSON.parse(data) : null;
             }
             function saveFeedsData(postId, dataArray) {
                 try {
-                    lsSet('feeds_' + postId, JSON.stringify(dataArray));
+                    localStorage.setItem(NS + 'feeds_' + postId, JSON.stringify(dataArray));
                 } catch(e) {
                     alert('图片总量过大，无法保存到本地。请精简一些图片。');
                 }
@@ -1498,9 +1466,9 @@
                 }
 
                 if (postId === 'feed-post-1') {
-                    const oldText1 = lsGet('text_post-1');
-                    const oldText2 = lsGet('text_post-2');
-                    const oldImg1 = lsGet('img_post-1');
+                    const oldText1 = localStorage.getItem(NS + 'text_post-1');
+                    const oldText2 = localStorage.getItem(NS + 'text_post-2');
+                    const oldImg1 = localStorage.getItem(NS + 'img_post-1');
 
                     const migrated = [
                         { type: 'text-img', text: oldText1 || '我拍下这张照片的时候，你还在我身边。现在照片还在，你走了。原来有些画面，从一开始就是用来怀念的。🖤', img: oldImg1 ? [oldImg1] : [], timestamp: Date.now() - 1000 * 60 * 60, pinned: false },
@@ -1536,7 +1504,6 @@
                 const currentUsername = document.getElementById('usernameDisplay').innerText || 'amber_starry';
                 const mainAvatarSrc = document.getElementById('mainAvatarImg').src;
 
-                // 排序：置顶的在前
                 feedsData.sort((a, b) => {
                     if (a.pinned && !b.pinned) return -1;
                     if (!a.pinned && b.pinned) return 1;
@@ -1550,7 +1517,6 @@
                     feedItem.className = 'feed-item';
                     if (item.pinned) feedItem.classList.add('pinned');
 
-                    // 置顶徽章
                     const pinnedBadge = document.createElement('div');
                     pinnedBadge.className = 'pinned-badge';
                     pinnedBadge.innerHTML = '<i class="fas fa-thumbtack"></i> 置顶';
@@ -1598,6 +1564,7 @@
                         textDiv.setAttribute('contenteditable', 'false');
                         textDiv.dataset.postid = postId;
                         textDiv.dataset.index = index;
+                        textDiv.innerHTML = linkify(item.text || '在这里输入文案...');
 
                         textWrapper.appendChild(textDiv);
 
@@ -1718,24 +1685,20 @@
                         }
                     }
 
-                    // 操作行（置顶 + 删除）
                     const actionsRow = document.createElement('div');
                     actionsRow.className = 'feed-actions-row';
 
-                    // 置顶按钮
                     const pinBtn = document.createElement('div');
                     pinBtn.className = 'action-btn ' + (item.pinned ? 'unpin-btn' : 'pin-btn');
                     pinBtn.innerHTML = item.pinned ? '<i class="fas fa-thumbtack"></i> 取消置顶' : '<i class="fas fa-thumbtack"></i> 置顶';
                     pinBtn.onclick = () => {
                         if (!document.body.classList.contains('edit-mode')) return;
-                        // 改变置顶状态并保存
-                        feedsData.forEach((f, i) => { if (i !== index) f.pinned = false; }); // 只允许一个置顶
+                        feedsData.forEach((f, i) => { if (i !== index) f.pinned = false; });
                         feedsData[index].pinned = !feedsData[index].pinned;
                         saveFeedsData(postId, feedsData);
                         renderFeeds(postId, containerId);
                     };
 
-                    // 删除帖子按钮
                     const deleteFeedBtn = document.createElement('div');
                     deleteFeedBtn.className = 'action-btn delete-btn';
                     deleteFeedBtn.innerHTML = '<i class="fas fa-trash"></i> 删除帖子';
@@ -1749,13 +1712,11 @@
                         }
                     };
 
-                    // 只有当帖子数 > 1 时才显示删除按钮（但置顶始终显示）
                     if (feedsData.length > 1) {
                         actionsRow.appendChild(pinBtn);
                         actionsRow.appendChild(deleteFeedBtn);
                         feedItem.appendChild(actionsRow);
                     } else {
-                        // 如果只有一个帖子，只显示置顶按钮
                         const singleActionsRow = document.createElement('div');
                         singleActionsRow.className = 'feed-actions-row';
                         singleActionsRow.appendChild(pinBtn);
@@ -1833,16 +1794,16 @@
                 renderFeeds('feed-post-6', 'feed-post-6', defaultDataMap['feed-post-6']);
             }
 
-            // ================= 须知板块逻辑 =================
+            // ================= 须知板块逻辑 (使用 NS) =================
             function getAccordionData() {
-                const data = lsGet('accordion');
+                const data = localStorage.getItem(NS + 'accordion');
                 return data ? JSON.parse(data) : [
                     { id: 1, title: '互动指南与边界感', content: '欢迎来到琥珀的星空。私信前请先看主页简介，不接急单，不聊无关话题。感谢理解与尊重。<br><br>· 仅接受过良好沟通的约稿或合作。<br>· 不回答在主页中已经明确写出的问题。<br>· 互相尊重，保持舒适的距离。<br><br>（当您输入的内容超过此高度时，这里会自动出现滚动条。）' },
                     { id: 2, title: '营业时间与回复频率', content: '通常在深夜出没，白天可能在补觉或者发呆。消息回复较慢，但看到一定会回。<br><br>· 核心活跃时间：23:00 - 03:00<br>· 周末偶尔会长时间离线。<br>· 请勿频繁催促。' }
                 ];
             }
             function saveAccordionData(dataArray) {
-                lsSet('accordion', JSON.stringify(dataArray));
+                localStorage.setItem(NS + 'accordion', JSON.stringify(dataArray));
             }
 
             function renderAccordion() {
@@ -1943,37 +1904,81 @@
 
             // ================= 初始化加载与模式切换 =================
             function loadSavedData() {
+                // 名称
                 const nameEl = document.getElementById('editName');
-                const nameSaved = lsGet('name');
-                nameEl.innerHTML = nameSaved
-                    ? (nameSaved + ' <i class="fas fa-certificate" style="color:var(--c-primary)"></i>')
-                    : DEFAULT_PROFILE.name;
-
-                const bioEl = document.getElementById('editBio');
-                bioEl.innerHTML = lsGet('bio') || DEFAULT_PROFILE.bio;
-
-                document.getElementById('editSignature').innerText = lsGet('signature') || DEFAULT_PROFILE.signature;
-
-                const joinEl = document.getElementById('editJoinDate');
-                joinEl.innerHTML = lsGet('join') || DEFAULT_PROFILE.join;
-
-                document.getElementById('statFollowing').textContent = lsGet('following') || DEFAULT_PROFILE.following;
-                document.getElementById('statFollowers').textContent = lsGet('followers') || DEFAULT_PROFILE.followers;
-
-                const usernameSaved = lsGet('username_sync');
-                const showUsername = usernameSaved || DEFAULT_PROFILE.username;
-                document.getElementById('usernameDisplay').textContent = showUsername;
-                syncUsername(showUsername);
-
-                const savedCover = lsGet('cover_bg');
-                const coverEl = document.getElementById('profileCover');
-                if (savedCover) {
-                    coverEl.style.backgroundImage = `url(${savedCover})`;
+                const nameSaved = localStorage.getItem(NS + 'name');
+                if (nameSaved) {
+                    nameEl.innerHTML = nameSaved + ' <i class="fas fa-certificate" style="color:var(--c-primary)"></i>';
                 } else {
-                    coverEl.style.backgroundImage = '';
+                    nameEl.innerHTML = '琥珀 <i class="fas fa-certificate" style="color:var(--c-primary)"></i>';
                 }
 
-                const savedAvatar = lsGet('main_avatar');
+                // 简介
+                const bioEl = document.getElementById('editBio');
+                const bioSaved = localStorage.getItem(NS + 'bio');
+                if (bioSaved) {
+                    bioEl.innerHTML = bioSaved;
+                } else {
+                    bioEl.innerHTML = `<span contenteditable="false"><i class="fas fa-birthday-cake"></i> 21岁</span>
+                        <span contenteditable="false"><i class="fas fa-star"></i> 双鱼座</span>
+                        <span contenteditable="false"><i class="fas fa-brain"></i> INFP</span>
+                        <span contenteditable="false"><i class="fas fa-users"></i> 星海旅团</span>`;
+                }
+
+                // 个性签名
+                const signatureEl = document.getElementById('editSignature');
+                const signatureSaved = localStorage.getItem(NS + 'signature');
+                if (signatureSaved) {
+                    signatureEl.innerText = signatureSaved;
+                } else {
+                    signatureEl.innerText = '半生漂泊，半生寻觅。';
+                }
+
+                // 加入日期
+                const joinEl = document.getElementById('editJoinDate');
+                const joinSaved = localStorage.getItem(NS + 'join');
+                if (joinSaved) {
+                    joinEl.innerHTML = joinSaved;
+                } else {
+                    joinEl.innerHTML = `<span><i class="fas fa-map-marker-alt"></i> 上海 · 静安</span>
+                        <span><i class="far fa-calendar-alt"></i> 2021年3月加入</span>`;
+                }
+
+                // 关注/粉丝
+                const savedFollowing = localStorage.getItem(NS + 'following');
+                if (savedFollowing) {
+                    document.getElementById('statFollowing').textContent = savedFollowing;
+                } else {
+                    document.getElementById('statFollowing').textContent = '358';
+                }
+                const savedFollowers = localStorage.getItem(NS + 'followers');
+                if (savedFollowers) {
+                    document.getElementById('statFollowers').textContent = savedFollowers;
+                } else {
+                    document.getElementById('statFollowers').textContent = '2.4k';
+                }
+
+                // 用户名
+                const usernameSaved = localStorage.getItem(NS + 'username_sync');
+                if (usernameSaved) {
+                    document.getElementById('usernameDisplay').textContent = usernameSaved;
+                    syncUsername(usernameSaved);
+                } else {
+                    const defaultName = 'amber_starry';
+                    document.getElementById('usernameDisplay').textContent = defaultName;
+                    syncUsername(defaultName);
+                }
+
+                // 封面
+                const savedCover = localStorage.getItem(NS + 'cover_bg');
+                if (savedCover) {
+                    document.getElementById('profileCover').style.backgroundImage = `url(${savedCover})`;
+                } else {
+                    document.getElementById('profileCover').style.backgroundImage = '';
+                }
+
+                // 头像
+                const savedAvatar = localStorage.getItem(NS + 'main_avatar');
                 const mainAvImg = document.getElementById('mainAvatarImg');
                 if (savedAvatar) {
                     mainAvImg.src = savedAvatar;
@@ -1983,8 +1988,7 @@
                     document.getElementById('mainAvatar').classList.remove('has-img');
                 }
 
-                initAllFeeds();
-                renderAccordion();
+                // 帖子计数在初始化后更新
             }
 
             const modeToggle = document.getElementById('modeToggle');
@@ -2019,40 +2023,38 @@
             modeBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const targetMode = this.dataset.mode;
-                    if (targetMode === 'edit') {
-                        // 已处于编辑模式时再次点击 = 切换密钥（用户空间）
-                        pwdOverlay.querySelector('.pwd-desc').innerHTML = body.classList.contains('edit-mode')
-                            ? '当前已处于编辑模式，输入其他密钥可切换到对应用户的内容空间'
-                            : '请输入密钥以切换到编辑模式，不同密钥对应独立内容空间';
+                    if (this.classList.contains('active')) return;
+
+                    if (targetMode === 'edit' && !body.classList.contains('edit-mode')) {
                         pwdOverlay.classList.add('active');
                         pwdInput.value = '';
                         pwdError.classList.remove('show');
                         setTimeout(() => pwdInput.focus(), 100);
                     } else if (targetMode === 'preview') {
-                        if (this.classList.contains('active')) return;
                         setMode('preview');
                     }
                 });
             });
 
+            // 修改密钥逻辑：任何非空密钥均有效，进入后使用对应命名空间
             document.getElementById('pwdConfirm').addEventListener('click', function() {
-                const entered = pwdInput.value;
-                if (SECRET_KEYS.indexOf(entered) !== -1) {
-                    const switched = currentKey !== null && currentKey !== entered;
-                    currentKey = entered;
-                    localStorage.setItem('amber_current_key', currentKey);
-                    // 切换到该密钥的内容空间并进入编辑模式
-                    restoreMusic();
-                    loadSavedData();
-                    setMode('edit');
-                    pwdOverlay.classList.remove('active');
-                    if (switched) {
-                        pwdInput.blur();
-                    }
-                } else {
+                const key = pwdInput.value.trim();
+                if (!key) {
+                    pwdError.textContent = '密钥不能为空';
                     pwdError.classList.add('show');
                     pwdInput.value = '';
+                    return;
                 }
+                // 设置当前密钥
+                setCurrentKey(key);
+                // 重新加载所有数据
+                reloadAllData().then(() => {
+                    setMode('edit'); // 直接进入编辑模式
+                    pwdOverlay.classList.remove('active');
+                }).catch(err => {
+                    console.error(err);
+                    alert('加载数据失败，请刷新页面重试');
+                });
             });
             document.getElementById('pwdCancel').addEventListener('click', () => pwdOverlay.classList.remove('active'));
             pwdInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('pwdConfirm').click(); });
@@ -2090,37 +2092,35 @@
 
                     if (target.id === 'editName') {
                         const pureText = target.innerText.replace(/<i class="fas fa-certificate".*?<\/i>/, '').trim();
-                        lsSet('name', pureText);
+                        localStorage.setItem(NS + 'name', pureText);
                         target.innerHTML = pureText + ' <i class="fas fa-certificate" style="color:var(--c-primary)"></i>';
                         return;
                     }
 
                     if (target.id === 'editSignature') {
-                        lsSet('signature', target.innerText);
+                        localStorage.setItem(NS + 'signature', target.innerText);
                         return;
                     }
 
-                    // 简介（年龄/星座/MBTI/常驻团等）：在任意子项编辑后整体永久保存
                     const bioBox = target.closest('#editBio');
                     if (bioBox) {
-                        lsSet('bio', bioBox.innerHTML);
+                        localStorage.setItem(NS + 'bio', bioBox.innerHTML);
                         return;
                     }
 
-                    // 城市/加入时间一行：同样支持子项编辑后整体保存
                     const joinBox = target.closest('#editJoinDate');
                     if (joinBox) {
-                        lsSet('join', joinBox.innerHTML);
+                        localStorage.setItem(NS + 'join', joinBox.innerHTML);
                         return;
                     }
 
                     if (target.id === 'statFollowing') {
-                        lsSet('following', target.innerText);
+                        localStorage.setItem(NS + 'following', target.innerText);
                         return;
                     }
 
                     if (target.id === 'statFollowers') {
-                        lsSet('followers', target.innerText);
+                        localStorage.setItem(NS + 'followers', target.innerText);
                         return;
                     }
 
@@ -2154,7 +2154,7 @@
                 try {
                     const base64 = await compressImage(file);
                     document.getElementById('profileCover').style.backgroundImage = `url(${base64})`;
-                    lsSet('cover_bg', base64);
+                    localStorage.setItem(NS + 'cover_bg', base64);
                 } catch (error) {
                     alert('图片处理失败');
                 }
@@ -2172,7 +2172,7 @@
                     const mainAvImg = document.getElementById('mainAvatarImg');
                     mainAvImg.src = base64;
                     document.getElementById('mainAvatar').classList.add('has-img');
-                    lsSet('main_avatar', base64);
+                    localStorage.setItem(NS + 'main_avatar', base64);
                     initAllFeeds();
                 } catch (error) {
                     alert('图片处理失败');
@@ -2258,14 +2258,18 @@
                 });
             });
 
-            document.querySelectorAll('.accordion-header').forEach(header => {
-                header.addEventListener('click', function() {
-                    this.parentElement.classList.toggle('active');
-                });
-            });
-
+            // 初始加载默认密钥 2121 的数据
             loadSavedData();
+            initAllFeeds();
+            renderAccordion();
             setMode('preview');
+            // 重新加载音乐（使用NS）
+            const savedMusicId = localStorage.getItem(NS + 'music_id');
+            if (savedMusicId) {
+                bgMusic.src = `https://music.163.com/song/media/outer/url?id=${savedMusicId}.mp3`;
+                document.getElementById('musicTitleDisplay').textContent = localStorage.getItem(NS + 'music_title') || '未知歌曲';
+                document.getElementById('musicArtistDisplay').textContent = localStorage.getItem(NS + 'music_artist') || '未知歌手';
+            }
         })();
     </script>
 </body>
