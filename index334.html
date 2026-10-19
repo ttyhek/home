@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>琥珀的星空</title>
+    <title>Amber's Starry Sky</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -44,7 +44,6 @@
             border-right: 1px solid rgba(0, 0, 0, 0.03);
         }
 
-        /* PC 端限制最大宽度居中 */
         @media (min-width: 641px) {
             .homepage {
                 max-width: 640px;
@@ -84,7 +83,7 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
-        /* 封面背景 */
+        /* 封面背景（保持完整自适应） */
         .profile-cover {
             height: 150px;
             background: #e2e8f0;
@@ -184,7 +183,7 @@
             cursor: text;
         }
 
-        /* 标签页 (可滑动) */
+        /* 标签页 */
         .profile-tabs {
             display: flex; border-bottom: 1px solid var(--c-border); padding: 0 16px;
             gap: 4px; overflow-x: auto; scrollbar-width: none;
@@ -205,11 +204,33 @@
 
         .panel-scroll { padding: 16px 16px 30px; }
 
-        /* 帖子基础 */
-        .post { padding: 16px; border-bottom: 1px solid var(--c-border); display: flex; gap: 12px; position: relative; }
-        
-        .post-avatar {
-            width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; border: 2px solid #fff;
+        /* ===== 统一的图文流样式 ===== */
+        .design-post {
+            background: transparent; 
+            border-radius: 0; 
+            padding: 0; 
+            margin-bottom: 0; 
+            box-shadow: none; 
+            position: relative;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+
+        .feed-item {
+            display: flex; flex-direction: column; gap: 10px;
+            padding: 16px;
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--c-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .feed-header {
+            display: flex; align-items: center; gap: 10px;
+            position: relative;
+        }
+
+        .feed-avatar {
+            width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; border: 2px solid #fff;
             background-color: #cce0f5;
             background-image: radial-gradient(circle at 50% 0%, #b8dcfc 0%, #6b9bd2 100%);
             background-size: cover; 
@@ -219,71 +240,27 @@
             overflow: hidden;
             display: flex; align-items: center; justify-content: center;
         }
-        .post-avatar img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .post-avatar::after {
+        .feed-avatar img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .feed-avatar::after {
             content: "✦"; position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
             font-size: 0.8rem; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.8);
         }
-        .post-avatar.has-img::after { display: none; }
-        .post-avatar.has-img img { display: block; }
+        .feed-avatar.has-img::after { display: none; }
+        .feed-avatar.has-img img { display: block; }
 
-        .post-content { flex: 1; min-width: 0; position: relative; }
-        .post-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
-        .post-name { font-weight: 800; font-size: 0.9rem; outline: none; border-radius: 4px; padding: 0 4px; margin-left: -4px; }
-        .post-username { color: var(--c-text-sub); font-size: 0.7rem; background: rgba(235, 245, 255, 0.8); padding: 2px 8px; border-radius: var(--radius-pill); }
-        .post-time { color: var(--c-text-muted); font-size: 0.7rem; margin-left: auto; }
-        .post-text { font-size: 0.85rem; line-height: 1.6; margin-bottom: 12px; outline: none; border-radius: 8px; padding: 6px; margin-left: -6px; }
-        .post-actions { display: flex; gap: 16px; }
-
-        /* 全局编辑按钮 */
-        .global-edit-btn {
-            position: absolute; top: 16px; right: 16px;
-            display: none; width: 28px; height: 28px;
-            background: var(--c-action-bg); color: var(--c-primary);
-            border-radius: 50%; align-items: center; justify-content: center;
-            cursor: pointer; border: 1px solid var(--c-primary-light); z-index: 10;
+        .feed-meta {
+            display: flex; flex-direction: column; gap: 2px;
         }
-        body.edit-mode .global-edit-btn { display: flex; }
+        .feed-name { font-weight: 800; font-size: 0.9rem; }
+        .feed-username { color: var(--c-text-sub); font-size: 0.7rem; }
 
-        /* 须知板块 */
-        .accordion-item { background: #fff; border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--c-border); overflow: hidden; }
-        .accordion-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; background: rgba(250, 253, 255, 0.9); }
-        .accordion-icon { width: 30px; height: 30px; border-radius: 10px; background: rgba(107, 155, 210, 0.1); color: var(--c-primary); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
-        .accordion-title { font-weight: 700; font-size: 0.9rem; flex: 1; }
-        .accordion-arrow { color: var(--c-text-muted); transition: transform 0.3s; font-size: 0.8rem; }
-        .accordion-item.active .accordion-arrow { transform: rotate(180deg); }
-        
-        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s; padding: 0 16px; background: #fff; }
-        .accordion-item.active .accordion-body { max-height: 500px; padding: 0 16px 16px; }
-        
-        .accordion-desc { 
-            font-size: 0.85rem; color: var(--c-text-sub); line-height: 1.6; 
-            border-top: 1px dashed var(--c-border); padding-top: 12px; outline: none;
-            max-height: 200px; overflow-y: auto; padding-right: 6px;
+        .feed-time {
+            color: var(--c-text-muted); font-size: 0.7rem; margin-left: auto;
         }
-
-        .accordion-desc::-webkit-scrollbar { width: 4px; }
-        .accordion-desc::-webkit-scrollbar-track { background: transparent; }
-        .accordion-desc::-webkit-scrollbar-thumb { background: var(--c-primary-light); border-radius: 10px; }
-
-        body.edit-mode .accordion-desc { background: #f8fbff; border-radius: 8px; padding: 10px; border: 1px solid var(--c-primary-light); }
-
-        /* ===== 自适应图文流 ===== */
-        .design-post {
-            background: #fff; border-radius: var(--radius-card); padding: 16px; 
-            margin-bottom: 16px; box-shadow: var(--shadow-md); position: relative;
-            display: flex; flex-direction: column; gap: 12px;
-        }
-
-        .feed-item {
-            display: flex; flex-direction: column; gap: 10px;
-            padding-bottom: 12px; border-bottom: 1px dashed var(--c-border);
-        }
-        .feed-item:last-child { border-bottom: none; padding-bottom: 0; }
 
         .feed-text {
             font-size: 0.85rem; line-height: 1.6; color: var(--c-text-main);
-            outline: none; padding: 4px; border-radius: 4px;
+            outline: none; padding: 4px; border-radius: 4px; margin-bottom: 4px;
         }
 
         .feed-image-wrapper {
@@ -293,7 +270,6 @@
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -304,19 +280,20 @@
             height: auto;
             display: block;
             object-fit: contain;
-            /* 手机端限制图片最大高度，避免超长图片 */
             max-height: 400px; 
         }
 
-        /* 占位提示 */
+        /* 图片占位提示（仅编辑模式显示） */
         .img-placeholder {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: none; /* 默认隐藏 */
+            flex-direction: column; align-items: center; justify-content: center;
             padding: 30px 16px; color: var(--c-primary-dark); font-weight: 600;
             pointer-events: none; font-size: 0.85rem;
         }
         .img-placeholder i { font-size: 1.5rem; margin-bottom: 6px; }
+        body.edit-mode .img-placeholder { display: flex; }
 
-        /* 添加按钮容器 */
+        /* 添加按钮容器（仅编辑模式显示） */
         .add-actions {
             display: none; 
             gap: 10px;
@@ -344,31 +321,38 @@
         }
         body.edit-mode .delete-feed-btn { display: block; }
 
-        /* 图片上传遮罩 */
+        /* 图片上传遮罩（仅编辑模式显示） */
         .img-edit-overlay {
             position: absolute; inset: 0; border-radius: inherit;
             background: rgba(0,0,0,0.4); color: white;
             display: none; align-items: center; justify-content: center; flex-direction: column;
             cursor: pointer; z-index: 10; font-weight: 600; font-size: 0.85rem;
         }
-        body.edit-mode .post-image:hover .img-edit-overlay,
         body.edit-mode .feed-image-wrapper:hover .img-edit-overlay { display: flex; }
         .img-edit-overlay i { font-size: 1.5rem; margin-bottom: 6px; }
 
-        /* 日常页动态图文流覆盖样式 */
-        #feed-post-1 .feed-item {
-            padding: 16px;
-            border-bottom: 1px solid var(--c-border);
+        /* 须知板块 */
+        .accordion-item { background: #fff; border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--c-border); overflow: hidden; }
+        .accordion-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; background: rgba(250, 253, 255, 0.9); }
+        .accordion-icon { width: 30px; height: 30px; border-radius: 10px; background: rgba(107, 155, 210, 0.1); color: var(--c-primary); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+        .accordion-title { font-weight: 700; font-size: 0.9rem; flex: 1; }
+        .accordion-arrow { color: var(--c-text-muted); transition: transform 0.3s; font-size: 0.8rem; }
+        .accordion-item.active .accordion-arrow { transform: rotate(180deg); }
+        
+        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s; padding: 0 16px; background: #fff; }
+        .accordion-item.active .accordion-body { max-height: 500px; padding: 0 16px 16px; }
+        
+        .accordion-desc { 
+            font-size: 0.85rem; color: var(--c-text-sub); line-height: 1.6; 
+            border-top: 1px dashed var(--c-border); padding-top: 12px; outline: none;
+            max-height: 200px; overflow-y: auto; padding-right: 6px;
         }
-        #feed-post-1 .feed-item:last-child {
-            border-bottom: none;
-        }
-        #feed-post-1 .feed-image-wrapper {
-            border-radius: 12px;
-        }
-        #feed-post-1 .add-actions {
-            padding: 0 16px 16px;
-        }
+
+        .accordion-desc::-webkit-scrollbar { width: 4px; }
+        .accordion-desc::-webkit-scrollbar-track { background: transparent; }
+        .accordion-desc::-webkit-scrollbar-thumb { background: var(--c-primary-light); border-radius: 10px; }
+
+        body.edit-mode .accordion-desc { background: #f8fbff; border-radius: 8px; padding: 10px; border: 1px solid var(--c-primary-light); }
 
         .end-note { text-align: center; padding: 20px 0 40px; color: var(--c-text-muted); font-size: 0.75rem; }
 
@@ -415,18 +399,18 @@
             .bio { font-size: 0.8rem; gap: 8px 12px; padding: 10px 12px; }
             .join-date { gap: 8px; font-size: 0.7rem; margin-top: 8px; }
             
-            /* 标签页紧凑 */
             .profile-tabs { padding: 0 12px; top: 56px; }
             .tab { padding: 12px 8px 10px; font-size: 0.8rem; }
             
             .panel-scroll { padding: 12px 12px 30px; }
-            .post { padding: 12px; gap: 10px; }
-            .post-avatar { width: 38px; height: 38px; }
-            .post-name { font-size: 0.85rem; }
-            .post-username { font-size: 0.65rem; padding: 1px 6px; }
-            .post-time { font-size: 0.65rem; }
-            .post-text { font-size: 0.8rem; margin-bottom: 10px; }
-            .post-actions { gap: 12px; }
+            
+            .feed-item { padding: 12px; gap: 8px; }
+            .feed-avatar { width: 36px; height: 36px; }
+            .feed-name { font-size: 0.85rem; }
+            .feed-username { font-size: 0.65rem; }
+            .feed-time { font-size: 0.65rem; }
+            .feed-text { font-size: 0.8rem; margin-bottom: 2px; }
+            .feed-image-wrapper img { max-height: 300px; }
             
             .accordion-header { padding: 12px; gap: 10px; }
             .accordion-icon { width: 26px; height: 26px; font-size: 0.8rem; }
@@ -435,19 +419,10 @@
             .accordion-item.active .accordion-body { padding: 0 12px 12px; }
             .accordion-desc { font-size: 0.8rem; padding-top: 10px; }
             
-            .design-post { padding: 12px; margin-bottom: 12px; gap: 10px; }
-            .feed-item { gap: 8px; padding-bottom: 10px; }
-            .feed-text { font-size: 0.8rem; }
-            .feed-image-wrapper { border-radius: 8px; }
-            .feed-image-wrapper img { max-height: 300px; }
-            
             .add-actions { gap: 8px; margin-top: 6px; }
             .add-new-feed-btn { padding: 10px; font-size: 0.75rem; }
             .add-new-feed-btn i { font-size: 1rem; margin-bottom: 4px; }
             .delete-feed-btn { font-size: 0.7rem; padding: 2px; }
-
-            #feed-post-1 .feed-item { padding: 12px; }
-            #feed-post-1 .add-actions { padding: 0 12px 12px; }
 
             .end-note { font-size: 0.7rem; padding: 16px 0 30px; }
             
@@ -458,7 +433,7 @@
             .pwd-btn { font-size: 0.8rem; padding: 8px; }
         }
 
-        /* 极小屏幕 (宽度小于360px) */
+        /* 极小屏幕 */
         @media (max-width: 360px) {
             .display-name { font-size: 1.1rem; }
             .profile-stats { gap: 4px; }
@@ -466,8 +441,8 @@
             .stat-number { font-size: 0.8rem; }
             .stat-label { font-size: 0.55rem; }
             .tab { font-size: 0.75rem; padding: 10px 6px; }
-            .post-name { font-size: 0.8rem; }
-            .post-text { font-size: 0.75rem; }
+            .feed-name { font-size: 0.8rem; }
+            .feed-text { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -533,10 +508,10 @@
         </div>
 
         <div class="tab-panels">
-            <!-- 日常面板 -->
+            <!-- 日常面板（统一样式） -->
             <div class="tab-panel active" id="tab1">
-                <div class="panel-scroll" style="padding: 0;">
-                    <div class="design-post" id="feed-post-1" style="padding: 0; box-shadow: none; background: transparent; border: none;"></div>
+                <div class="panel-scroll">
+                    <div class="design-post" id="feed-post-1"></div>
                 </div>
             </div>
 
@@ -640,6 +615,7 @@
                     el.textContent = '@' + newName;
                 });
                 localStorage.setItem('amber_username_sync', newName);
+                document.title = newName + "'s Starry Sky";
             }
 
             // ================= 数据存储结构 (图文帖子) =================
@@ -660,7 +636,6 @@
                 let feedsData = getFeedsData(postId);
                 if (feedsData) return feedsData;
 
-                // 特殊处理：日常页（feed-post-1）
                 if (postId === 'feed-post-1') {
                     const oldText1 = localStorage.getItem('amber_text_post-1');
                     const oldText2 = localStorage.getItem('amber_text_post-2');
@@ -686,6 +661,7 @@
 
                 let feedsData = ensureDefaultData(postId, defaultData);
                 const currentUsername = document.getElementById('usernameDisplay').innerText || 'amber_starry';
+                const mainAvatarSrc = document.getElementById('mainAvatarImg').src;
                 
                 feedsData.forEach(item => {
                     if (!item.type) item.type = 'text-img';
@@ -693,38 +669,45 @@
 
                 container.innerHTML = '';
 
-                // 1. 渲染每个帖子项
                 feedsData.forEach((item, index) => {
                     const feedItem = document.createElement('div');
                     feedItem.className = 'feed-item';
-                    
-                    if (containerId === 'feed-post-1') {
-                        feedItem.classList.add('post');
-                    }
 
-                    // 头部信息
+                    // 头部信息 (包含头像)
                     const headerDiv = document.createElement('div');
-                    headerDiv.className = 'post-header';
+                    headerDiv.className = 'feed-header';
+                    
+                    const avatarDiv = document.createElement('div');
+                    avatarDiv.className = 'feed-avatar';
+                    if (mainAvatarSrc) {
+                        avatarDiv.classList.add('has-img');
+                        avatarDiv.innerHTML = `<img src="${mainAvatarSrc}" alt="">`;
+                    }
+                    headerDiv.appendChild(avatarDiv);
+
+                    const metaDiv = document.createElement('div');
+                    metaDiv.className = 'feed-meta';
                     
                     const nameSpan = document.createElement('span');
-                    nameSpan.className = 'post-name';
-                    nameSpan.setAttribute('contenteditable', 'false');
+                    nameSpan.className = 'feed-name';
                     nameSpan.innerText = '琥珀';
-                    headerDiv.appendChild(nameSpan);
+                    metaDiv.appendChild(nameSpan);
 
                     const usernameSpan = document.createElement('span');
-                    usernameSpan.className = 'post-username sync-username';
+                    usernameSpan.className = 'feed-username sync-username';
                     usernameSpan.innerText = '@' + currentUsername;
-                    headerDiv.appendChild(usernameSpan);
+                    metaDiv.appendChild(usernameSpan);
+
+                    headerDiv.appendChild(metaDiv);
 
                     const timeSpan = document.createElement('span');
-                    timeSpan.className = 'post-time';
+                    timeSpan.className = 'feed-time';
                     timeSpan.innerText = '· 刚刚';
                     headerDiv.appendChild(timeSpan);
 
                     feedItem.appendChild(headerDiv);
 
-                    // === 文案 ===
+                    // 文案
                     if (item.type === 'text-img') {
                         const textDiv = document.createElement('div');
                         textDiv.className = 'feed-text';
@@ -735,7 +718,7 @@
                         feedItem.appendChild(textDiv);
                     }
 
-                    // === 图片区 ===
+                    // 图片区
                     const imgWrapper = document.createElement('div');
                     imgWrapper.className = 'feed-image-wrapper';
                     
@@ -744,6 +727,7 @@
                         img.src = item.img;
                         imgWrapper.appendChild(img);
                     } else {
+                        // 占位提示（仅编辑模式显示，依赖 CSS）
                         imgWrapper.innerHTML = `<div class="img-placeholder"><i class="fas fa-camera"></i>点击上传配图</div>`;
                     }
 
@@ -755,7 +739,7 @@
                     };
                     feedItem.appendChild(imgWrapper);
 
-                    // === 删除按钮 ===
+                    // 删除按钮（仅编辑模式显示）
                     if(feedsData.length > 1) {
                         const deleteBtn = document.createElement('div');
                         deleteBtn.className = 'delete-feed-btn';
@@ -775,7 +759,7 @@
                     container.appendChild(feedItem);
                 });
 
-                // 2. 添加新图文或图片的按钮组
+                // 添加按钮组（仅编辑模式显示）
                 const addActions = document.createElement('div');
                 addActions.className = 'add-actions';
 
@@ -856,10 +840,6 @@
                     const mainAvImg = document.getElementById('mainAvatarImg');
                     mainAvImg.src = savedAvatar;
                     document.getElementById('mainAvatar').classList.add('has-img');
-                    document.querySelectorAll('.post-avatar').forEach(el => {
-                        el.classList.add('has-img');
-                        if(el.querySelector('img')) el.querySelector('img').src = savedAvatar;
-                    });
                 }
 
                 initAllFeeds();
@@ -953,7 +933,6 @@
 
             // ================= 图片上传 =================
             
-            // 封面
             const coverInput = document.getElementById('coverInput');
             document.getElementById('triggerCoverUpload').addEventListener('click', () => {
                 if(body.classList.contains('edit-mode')) coverInput.click();
@@ -970,7 +949,6 @@
                 reader.readAsDataURL(file);
             });
 
-            // 主头像
             const avatarInput = document.getElementById('avatarInput');
             document.getElementById('triggerAvatarUpload').addEventListener('click', () => {
                 if(body.classList.contains('edit-mode')) avatarInput.click();
@@ -986,17 +964,14 @@
                     mainAvImg.src = base64;
                     document.getElementById('mainAvatar').classList.add('has-img');
                     
-                    document.querySelectorAll('.post-avatar').forEach(el => {
-                        el.classList.add('has-img');
-                        if(el.querySelector('img')) el.querySelector('img').src = base64;
-                    });
-                    
                     try { localStorage.setItem('amber_main_avatar', base64); } catch(err) { alert('图片太大，无法保存'); }
+                    
+                    // 上传头像后重新渲染所有动态帖子，让所有帖子头像同步
+                    initAllFeeds();
                 };
                 reader.readAsDataURL(file);
             });
 
-            // 通用图片上传
             window.triggerImgUpload = function(targetId, storageKey) {
                 if(!body.classList.contains('edit-mode')) return;
                 currentUploadTargetId = targetId;
