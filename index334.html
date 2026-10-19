@@ -78,7 +78,6 @@
         }
         .music-btn:hover { transform: rotate(0deg) scale(1.05); }
         
-        /* 歌名左，歌手右 */
         .music-info {
             display: flex;
             flex-direction: row;
@@ -340,69 +339,77 @@
         body.edit-mode .feed-text-edit-btn { display: flex; }
 
         /* =========================================
-           最多 3 张图，横向滑动观看
+           动态网格图片排版 (支持多图自适应)
            ========================================= */
-        .feed-image-scroll {
-            display: flex;
-            gap: 8px;
+        .feed-image-grid {
+            display: grid;
+            gap: 6px;
             width: 100%;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            padding-bottom: 6px;
             margin-top: 4px;
         }
-        
-        .feed-image-scroll::-webkit-scrollbar { display: none; }
 
-        .scroll-image-item {
+        /* 根据图片数量设置列数 */
+        .feed-image-grid[data-count="1"] { grid-template-columns: 1fr; max-width: 100%; }
+        .feed-image-grid[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+        .feed-image-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="4"] { grid-template-columns: repeat(2, 1fr); }
+        .feed-image-grid[data-count="5"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="6"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="7"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="8"] { grid-template-columns: repeat(3, 1fr); }
+        .feed-image-grid[data-count="9"] { grid-template-columns: repeat(3, 1fr); }
+
+        .grid-image-item {
             position: relative;
-            border-radius: 8px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 6px;
             overflow: hidden;
             background-color: #f0f4f8;
             cursor: pointer;
-            flex-shrink: 0;
-            scroll-snap-align: start;
+        }
+        
+        .grid-image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
-        /* 单图：占满宽度，展示比例 */
-        .scroll-image-item.single {
+        /* 单图特化：自适应高度，内部可滑动 */
+        .grid-image-item.single {
+            aspect-ratio: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background-color: transparent;
+        }
+        .grid-image-item.single img {
             width: 100%;
             height: auto;
-            max-height: 400px;
-        }
-        .scroll-image-item.single img {
-            width: 100%; height: auto; object-fit: contain; display: block;
-        }
-
-        /* 双图或三图：固定宽度 */
-        .scroll-image-item.multi {
-            width: 70%;
-            aspect-ratio: 4 / 3;
-        }
-        .scroll-image-item.multi img {
-            width: 100%; height: 100%; object-fit: cover; display: block;
+            object-fit: contain;
+            display: block;
+            border-radius: 6px;
         }
 
-        /* 添加图片按钮 */
-        .scroll-add-btn {
+        .grid-add-btn {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 80px;
-            height: 80px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
             border: 1px dashed var(--c-primary-light);
-            border-radius: 8px;
+            border-radius: 6px;
             background: rgba(245, 249, 255, 0.3);
             color: var(--c-primary-dark);
             font-weight: 600;
             cursor: pointer;
             font-size: 0.75rem;
-            flex-shrink: 0;
             transition: background 0.2s;
         }
-        .scroll-add-btn:hover { background: rgba(220, 235, 255, 0.9); }
-        .scroll-add-btn i { font-size: 1.2rem; margin-bottom: 4px; }
+        .grid-add-btn:hover { background: rgba(220, 235, 255, 0.9); }
+        .grid-add-btn i { font-size: 1.2rem; margin-bottom: 4px; }
 
         .img-placeholder {
             display: none; 
@@ -424,10 +431,9 @@
             display: none; align-items: center; justify-content: center; flex-direction: column;
             cursor: pointer; z-index: 10; font-weight: 600; font-size: 0.75rem;
         }
-        body.edit-mode .scroll-image-item:hover .img-edit-overlay { display: flex; }
+        body.edit-mode .grid-image-item:hover .img-edit-overlay { display: flex; }
         .img-edit-overlay i { font-size: 1.2rem; margin-bottom: 4px; }
 
-        /* 添加按钮 */
         .add-actions {
             display: none; 
             gap: 10px;
@@ -617,7 +623,6 @@
                 <div class="music-btn" id="musicPlayBtn">
                     <i class="fas fa-play" id="musicIcon"></i>
                 </div>
-                <!-- 歌名在左，歌手在右 -->
                 <div class="music-info">
                     <span class="music-title" id="musicTitleDisplay">新地球</span>
                     <span class="music-artist" id="musicArtistDisplay">林俊杰</span>
@@ -1021,7 +1026,6 @@
                         
                         textWrapper.appendChild(textDiv);
 
-                        // 如果是纯文字，或者列表中的第一个帖子，显示编辑按钮
                         if (item.type === 'text' || index === 0) {
                             const editBtn = document.createElement('div');
                             editBtn.className = 'feed-text-edit-btn';
@@ -1045,13 +1049,17 @@
                         const imgCount = item.img ? item.img.length : 0;
                         
                         if (imgCount > 0 || document.body.classList.contains('edit-mode')) {
-                            const scrollDiv = document.createElement('div');
-                            scrollDiv.className = 'feed-image-scroll';
+                            const gridDiv = document.createElement('div');
+                            gridDiv.className = 'feed-image-grid';
+                            gridDiv.dataset.count = Math.max(1, imgCount); 
 
                             if (item.img) {
                                 item.img.forEach((imgSrc, imgIdx) => {
                                     const imgItem = document.createElement('div');
-                                    imgItem.className = 'scroll-image-item ' + (imgCount === 1 ? 'single' : 'multi');
+                                    imgItem.className = 'grid-image-item';
+                                    if (imgCount === 1) {
+                                        imgItem.classList.add('single');
+                                    }
                                     
                                     const img = document.createElement('img');
                                     img.src = imgSrc;
@@ -1071,14 +1079,13 @@
                                     };
                                     imgItem.appendChild(overlay);
 
-                                    scrollDiv.appendChild(imgItem);
+                                    gridDiv.appendChild(imgItem);
                                 });
                             }
 
-                            // 编辑模式下最多只能添加3张
-                            if (document.body.classList.contains('edit-mode') && imgCount < 3) {
+                            if (document.body.classList.contains('edit-mode') && imgCount < 9) {
                                 const addBtn = document.createElement('div');
-                                addBtn.className = 'scroll-add-btn';
+                                addBtn.className = 'grid-add-btn';
                                 addBtn.innerHTML = '<i class="fas fa-plus"></i>';
                                 addBtn.onclick = (e) => {
                                     e.stopPropagation();
@@ -1088,10 +1095,10 @@
                                     currentImageIndex = -1; 
                                     document.getElementById('globalImgInput').click();
                                 };
-                                scrollDiv.appendChild(addBtn);
+                                gridDiv.appendChild(addBtn);
                             }
 
-                            feedItem.appendChild(scrollDiv);
+                            feedItem.appendChild(gridDiv);
                         }
                     }
 
@@ -1363,10 +1370,10 @@
                 
                 if (currentImageIndex === -1) {
                     const currentCount = feedsData[currentPostIndex].img ? feedsData[currentPostIndex].img.length : 0;
-                    const remaining = 3 - currentCount; // 最多3张
+                    const remaining = 9 - currentCount; 
                     
                     if (remaining <= 0) {
-                        alert('最多只能上传 3 张图片');
+                        alert('最多只能上传 9 张图片');
                         this.value = '';
                         return;
                     }
