@@ -297,7 +297,6 @@
             color: var(--c-text-muted); font-size: 0.7rem; margin-left: auto;
         }
 
-        /* 帖子文案展示与编辑 */
         .feed-text-wrapper {
             position: relative;
             display: flex;
@@ -319,7 +318,6 @@
             cursor: text;
         }
 
-        /* 纯文字贴的编辑图标提示 */
         .feed-text-edit-btn {
             display: none;
             background: var(--c-primary);
@@ -347,7 +345,6 @@
             margin-top: 4px;
         }
 
-        /* 根据图片数量设置列数 */
         .feed-image-grid[data-count="1"] { grid-template-columns: 1fr; max-width: 70%; }
         .feed-image-grid[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
         .feed-image-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
@@ -361,7 +358,7 @@
         .grid-image-item {
             position: relative;
             width: 100%;
-            aspect-ratio: 1 / 1; /* 正方形 */
+            aspect-ratio: 1 / 1;
             border-radius: 6px;
             overflow: hidden;
             background-color: #f0f4f8;
@@ -371,11 +368,10 @@
         .grid-image-item img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 填满正方形 */
+            object-fit: cover;
             display: block;
         }
 
-        /* 添加图片按钮 */
         .grid-add-btn {
             display: flex;
             flex-direction: column;
@@ -395,7 +391,6 @@
         .grid-add-btn:hover { background: rgba(220, 235, 255, 0.9); }
         .grid-add-btn i { font-size: 1.2rem; margin-bottom: 4px; }
 
-        /* 空图片占位提示 */
         .img-placeholder {
             display: none; 
             flex-direction: column; align-items: center; justify-content: center;
@@ -410,7 +405,6 @@
         .img-placeholder i { font-size: 1.5rem; margin-bottom: 6px; }
         body.edit-mode .img-placeholder { display: flex; }
 
-        /* 图片悬浮遮罩 */
         .img-edit-overlay {
             position: absolute; inset: 0; border-radius: inherit;
             background: rgba(0,0,0,0.4); color: white;
@@ -420,7 +414,6 @@
         body.edit-mode .grid-image-item:hover .img-edit-overlay { display: flex; }
         .img-edit-overlay i { font-size: 1.2rem; margin-bottom: 4px; }
 
-        /* 添加按钮 */
         .add-actions {
             display: none; 
             gap: 10px;
@@ -448,7 +441,6 @@
         }
         body.edit-mode .delete-feed-btn { display: block; }
 
-        /* 须知板块 */
         .accordion-item { background: #fff; border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--c-border); overflow: hidden; }
         .accordion-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; background: rgba(250, 253, 255, 0.9); }
         .accordion-icon { width: 30px; height: 30px; border-radius: 10px; background: rgba(107, 155, 210, 0.1); color: var(--c-primary); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
@@ -473,7 +465,6 @@
 
         .end-note { text-align: center; padding: 20px 0 40px; color: var(--c-text-muted); font-size: 0.75rem; }
 
-        /* 弹窗通用 */
         .pwd-overlay {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center;
@@ -498,7 +489,6 @@
         .pwd-error.show { display: block; animation: shake 0.3s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        /* 文字编辑弹窗特殊样式 */
         .edit-text-modal textarea {
             width: 100%;
             height: 120px;
@@ -517,7 +507,6 @@
             border-color: var(--c-primary);
         }
 
-        /* 音乐配置弹窗 */
         .music-config-modal .pwd-input {
             letter-spacing: normal;
             text-align: left;
@@ -536,7 +525,6 @@
 
         .hidden-file { display: none; }
 
-        /* 手机端适配 */
         @media (max-width: 500px) {
             .navbar { padding: 12px 16px; }
             .profile-cover { height: 120px; }
@@ -744,7 +732,7 @@
             </div>
         </div>
         
-        <div class="end-note"><i class="fas fa-circle"></i> 已经到底了 · 琥珀的星空</div>
+        <div class="end-note"><i class="fas fa-circle"></i> 已经到底了</div>
     </div>
 
     <div class="pwd-overlay" id="pwdOverlay">
@@ -800,7 +788,6 @@
     
     <script>
         (function() {
-            // ================= 音乐播放与配置逻辑 =================
             const bgMusic = document.getElementById('bgMusic');
             const musicPlayBtn = document.getElementById('musicPlayBtn');
             const musicIcon = document.getElementById('musicIcon');
@@ -880,7 +867,6 @@
                 document.getElementById('musicArtistDisplay').textContent = localStorage.getItem('amber_music_artist') || '未知歌手';
             }
 
-            // ================= 其他原有逻辑 =================
             let currentUploadTargetId = null;
             let currentUploadStorageKey = null;
             let currentPostIndex = -1;
@@ -1326,7 +1312,6 @@
                 reader.readAsDataURL(file);
             });
 
-            // ================= 多图上传逻辑 =================
             const globalImgInput = document.getElementById('globalImgInput');
             
             globalImgInput.addEventListener('change', function(e) {
@@ -1344,7 +1329,6 @@
                 const fileList = Array.from(files);
                 
                 if (currentImageIndex === -1) {
-                    // 新增图片
                     const currentCount = feedsData[currentPostIndex].img ? feedsData[currentPostIndex].img.length : 0;
                     const remaining = 9 - currentCount;
                     
@@ -1376,7 +1360,6 @@
                         reader.readAsDataURL(file);
                     });
                 } else {
-                    // 替换单张图片
                     const file = files[0];
                     const reader = new FileReader();
                     reader.onload = function(event) {
