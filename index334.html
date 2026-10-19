@@ -339,7 +339,7 @@
         body.edit-mode .feed-text-edit-btn { display: flex; }
 
         /* =========================================
-           动态网格图片排版 (支持多图自适应)
+           动态网格图片排版
            ========================================= */
         .feed-image-grid {
             display: grid;
@@ -348,7 +348,6 @@
             margin-top: 4px;
         }
 
-        /* 根据图片数量设置列数 */
         .feed-image-grid[data-count="1"] { grid-template-columns: 1fr; max-width: 100%; }
         .feed-image-grid[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
         .feed-image-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
@@ -376,20 +375,54 @@
             display: block;
         }
 
-        /* 单图特化：自适应高度，内部可滑动 */
+        /* 单图特化 */
         .grid-image-item.single {
             aspect-ratio: auto;
             max-height: 400px;
             overflow-y: auto;
             overflow-x: hidden;
             background-color: transparent;
+            scrollbar-width: thin;
         }
+        .grid-image-item.single::-webkit-scrollbar { width: 4px; }
+        .grid-image-item.single::-webkit-scrollbar-thumb { background: var(--c-primary-light); border-radius: 10px; }
+
         .grid-image-item.single img {
             width: 100%;
             height: auto;
             object-fit: contain;
             display: block;
             border-radius: 6px;
+        }
+
+        /* 滑动提示条 */
+        .swipe-hint {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+            color: #fff;
+            text-align: center;
+            padding: 16px 10px 6px 10px;
+            font-size: 0.65rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 0 0 6px 6px;
+        }
+        .grid-image-item.single:hover .swipe-hint,
+        .grid-image-item.single.show-hint .swipe-hint {
+            opacity: 1;
+        }
+        .swipe-hint i {
+            margin-right: 4px;
+            font-size: 0.7rem;
+            animation: bounceDown 1.5s infinite;
+        }
+        @keyframes bounceDown {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(3px); }
         }
 
         .grid-add-btn {
@@ -461,11 +494,36 @@
         }
         body.edit-mode .delete-feed-btn { display: block; }
 
-        /* 须知板块 */
-        .accordion-item { background: #fff; border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--c-border); overflow: hidden; }
-        .accordion-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; background: rgba(250, 253, 255, 0.9); }
-        .accordion-icon { width: 30px; height: 30px; border-radius: 10px; background: rgba(107, 155, 210, 0.1); color: var(--c-primary); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
-        .accordion-title { font-weight: 700; font-size: 0.9rem; flex: 1; }
+        /* =========================================
+           须知板块
+           ========================================= */
+        .accordion-item { 
+            background: #fff; 
+            border-radius: 14px; 
+            margin-bottom: 12px; 
+            border: 1px solid var(--c-border); 
+            overflow: hidden; 
+            position: relative;
+        }
+        .accordion-header { 
+            display: flex; align-items: center; gap: 12px; 
+            padding: 14px 16px; cursor: pointer; 
+            background: rgba(250, 253, 255, 0.9); 
+        }
+        .accordion-icon { 
+            width: 30px; height: 30px; border-radius: 10px; 
+            background: rgba(107, 155, 210, 0.1); color: var(--c-primary); 
+            display: flex; align-items: center; justify-content: center; font-size: 0.9rem; 
+        }
+        .accordion-title { 
+            font-weight: 700; font-size: 0.9rem; flex: 1; 
+            outline: none; border-radius: 4px; padding: 2px 4px; margin-left: -4px;
+        }
+        body.edit-mode .accordion-title {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px dashed var(--c-primary-light);
+            cursor: text;
+        }
         .accordion-arrow { color: var(--c-text-muted); transition: transform 0.3s; font-size: 0.8rem; }
         .accordion-item.active .accordion-arrow { transform: rotate(180deg); }
         
@@ -477,15 +535,57 @@
             border-top: 1px dashed var(--c-border); padding-top: 12px; outline: none;
             max-height: 200px; overflow-y: auto; padding-right: 6px;
         }
-
         .accordion-desc::-webkit-scrollbar { width: 4px; }
         .accordion-desc::-webkit-scrollbar-track { background: transparent; }
         .accordion-desc::-webkit-scrollbar-thumb { background: var(--c-primary-light); border-radius: 10px; }
-
         body.edit-mode .accordion-desc { background: #f8fbff; border-radius: 8px; padding: 10px; border: 1px solid var(--c-primary-light); }
+
+        /* 须知内的操作按钮 */
+        .accordion-actions {
+            position: absolute;
+            top: 10px;
+            right: 36px;
+            display: none;
+            gap: 6px;
+            z-index: 10;
+        }
+        body.edit-mode .accordion-actions { display: flex; }
+        .acc-action-btn {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--c-border);
+            color: var(--c-primary-dark);
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        .acc-action-btn:hover { background: #fff; color: var(--c-primary); }
+        .acc-action-btn.delete { color: #ef4444; }
+        .acc-action-btn.delete:hover { color: #dc2626; }
+
+        .add-acc-btn {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            background: rgba(245, 249, 255, 0.6);
+            border: 2px dashed var(--c-primary-light);
+            border-radius: 12px;
+            color: var(--c-primary-dark);
+            font-weight: 700; cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+            font-size: 0.8rem;
+            margin-top: 16px;
+        }
+        body.edit-mode .add-acc-btn { display: block; }
+        .add-acc-btn:hover { background: rgba(220, 235, 255, 0.9); }
 
         .end-note { text-align: center; padding: 20px 0 40px; color: var(--c-text-muted); font-size: 0.75rem; }
 
+        /* 弹窗 */
         .pwd-overlay {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center;
@@ -544,7 +644,41 @@
             margin-top: 8px;
         }
 
+        .add-acc-modal .pwd-input {
+            letter-spacing: normal;
+            text-align: left;
+            font-size: 0.85rem;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .add-acc-modal textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 2px solid var(--c-border);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            resize: none;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+
         .hidden-file { display: none; }
+
+        /* 全屏查看图片遮罩层 */
+        .image-preview-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9);
+            display: none; justify-content: center; align-items: center;
+            z-index: 9999; opacity: 0; transition: opacity 0.3s;
+        }
+        .image-preview-overlay.active { display: flex; opacity: 1; }
+        .image-preview-overlay img {
+            max-width: 95%; max-height: 95%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
 
         @media (max-width: 500px) {
             .navbar { padding: 12px 16px; }
@@ -694,37 +828,8 @@
 
             <div class="tab-panel" id="tab2">
                 <div class="panel-scroll">
-                    <div class="accordion-item">
-                        <div class="accordion-header">
-                            <div class="accordion-icon"><i class="fas fa-book-open"></i></div>
-                            <div class="accordion-title">互动指南与边界感</div>
-                            <i class="fas fa-chevron-down accordion-arrow"></i>
-                        </div>
-                        <div class="accordion-body">
-                            <div class="accordion-desc" id="desc1" contenteditable="false">
-                                欢迎来到琥珀的星空。私信前请先看主页简介，不接急单，不聊无关话题。感谢理解与尊重。<br><br>
-                                · 仅接受过良好沟通的约稿或合作。<br>
-                                · 不回答在主页中已经明确写出的问题。<br>
-                                · 互相尊重，保持舒适的距离。<br><br>
-                                （当您输入的内容超过此高度时，这里会自动出现滚动条。）
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <div class="accordion-header">
-                            <div class="accordion-icon"><i class="fas fa-moon"></i></div>
-                            <div class="accordion-title">营业时间与回复频率</div>
-                            <i class="fas fa-chevron-down accordion-arrow"></i>
-                        </div>
-                        <div class="accordion-body">
-                            <div class="accordion-desc" id="desc2" contenteditable="false">
-                                通常在深夜出没，白天可能在补觉或者发呆。消息回复较慢，但看到一定会回。<br><br>
-                                · 核心活跃时间：23:00 - 03:00<br>
-                                · 周末偶尔会长时间离线。<br>
-                                · 请勿频繁催促。
-                            </div>
-                        </div>
-                    </div>
+                    <div id="accordionContainer"></div>
+                    <div class="add-acc-btn" onclick="openAddAccordionModal()">+ 添加新版块</div>
                 </div>
             </div>
 
@@ -805,15 +910,32 @@
         </div>
     </div>
 
+    <div class="pwd-overlay" id="addAccOverlay">
+        <div class="pwd-card add-acc-modal">
+            <div class="pwd-icon"><i class="fas fa-plus-circle"></i></div>
+            <div class="pwd-title">新增须知版块</div>
+            <div class="pwd-desc">请填写标题和内容</div>
+            <input type="text" class="pwd-input" id="newAccTitle" placeholder="版块标题">
+            <textarea id="newAccContent" placeholder="版块内容..."></textarea>
+            <div class="pwd-actions">
+                <button class="pwd-btn pwd-btn-cancel" onclick="document.getElementById('addAccOverlay').classList.remove('active')">取消</button>
+                <button class="pwd-btn pwd-btn-confirm" onclick="saveNewAccordion()">确认添加</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="image-preview-overlay" id="imagePreviewOverlay" onclick="closeImagePreview()">
+        <img id="previewImage" src="" alt="预览图片">
+    </div>
+
     <input type="file" id="globalImgInput" accept="image/*" multiple class="hidden-file">
     
     <script>
         (function() {
+            // ================= 音乐 =================
             const bgMusic = document.getElementById('bgMusic');
             const musicPlayBtn = document.getElementById('musicPlayBtn');
             const musicIcon = document.getElementById('musicIcon');
-            const musicTitleDisplay = document.getElementById('musicTitleDisplay');
-            const musicArtistDisplay = document.getElementById('musicArtistDisplay');
             const musicEditHint = document.getElementById('musicEditHint');
             const musicConfigOverlay = document.getElementById('musicConfigOverlay');
             
@@ -826,9 +948,7 @@
                     playPromise.then(_ => {
                         musicIcon.className = 'fas fa-pause';
                         isPlaying = true;
-                    }).catch(error => {
-                        console.log("自动播放被阻止，等待用户交互");
-                    });
+                    }).catch(error => { console.log("等待交互"); });
                 }
             }
 
@@ -836,7 +956,6 @@
                 attemptPlay();
                 document.removeEventListener('click', initPlay);
             }, { once: true });
-
             window.addEventListener('load', attemptPlay);
 
             musicPlayBtn.addEventListener('click', function() {
@@ -864,11 +983,7 @@
                 let inputVal = document.getElementById('configMusicId').value.trim();
                 const title = document.getElementById('configMusicTitle').value.trim() || '未知歌曲';
                 const artist = document.getElementById('configMusicArtist').value.trim() || '未知歌手';
-
-                if (!inputVal) {
-                    alert('请输入音乐 ID 或链接');
-                    return;
-                }
+                if (!inputVal) { alert('请输入音乐 ID 或链接'); return; }
 
                 let musicId = inputVal;
                 if (inputVal.includes('id=')) {
@@ -879,13 +994,10 @@
                     if (match) musicId = match[1];
                 }
 
-                const newSrc = `https://music.163.com/song/media/outer/url?id=${musicId}.mp3`;
-                bgMusic.src = newSrc;
+                bgMusic.src = `https://music.163.com/song/media/outer/url?id=${musicId}.mp3`;
                 bgMusic.load();
-
-                musicTitleDisplay.textContent = title;
-                musicArtistDisplay.textContent = artist;
-
+                document.getElementById('musicTitleDisplay').textContent = title;
+                document.getElementById('musicArtistDisplay').textContent = artist;
                 localStorage.setItem('amber_music_id', musicId);
                 localStorage.setItem('amber_music_title', title);
                 localStorage.setItem('amber_music_artist', artist);
@@ -893,7 +1005,6 @@
                 isPlaying = false;
                 musicIcon.className = 'fas fa-play';
                 attemptPlay();
-                
                 musicConfigOverlay.classList.remove('active');
             };
 
@@ -904,15 +1015,39 @@
                 document.getElementById('musicArtistDisplay').textContent = localStorage.getItem('amber_music_artist') || '未知歌手';
             }
 
+            // ================= 图片全屏预览 =================
+            const imagePreviewOverlay = document.getElementById('imagePreviewOverlay');
+            const previewImage = document.getElementById('previewImage');
+
+            window.openImagePreview = function(src) {
+                previewImage.src = src;
+                imagePreviewOverlay.classList.add('active');
+            };
+
+            window.closeImagePreview = function() {
+                imagePreviewOverlay.classList.remove('active');
+                previewImage.src = '';
+            };
+
+            // ================= 通用与时间计算 =================
             let currentUploadTargetId = null;
             let currentUploadStorageKey = null;
             let currentPostIndex = -1;
             let currentImageIndex = -1; 
-            
             let currentEditingPostId = null;
             let currentEditingIndex = null;
-            
             const SECRET_KEY = '3344';
+
+            function formatTimeAgo(timestamp) {
+                const diff = Date.now() - timestamp;
+                const minutes = Math.floor(diff / 60000);
+                if (minutes < 1) return '刚刚';
+                if (minutes < 60) return `${minutes}分钟前`;
+                const hours = Math.floor(minutes / 60);
+                if (hours < 24) return `${hours}小时前`;
+                const days = Math.floor(hours / 24);
+                return `${days}天前`;
+            }
 
             function syncUsername(newName) {
                 document.querySelectorAll('.sync-username').forEach(el => {
@@ -922,6 +1057,7 @@
                 document.title = newName + "'s Starry Sky";
             }
 
+            // ================= 帖子数据与渲染 =================
             function getFeedsData(postId) {
                 const data = localStorage.getItem('amber_feeds_' + postId);
                 return data ? JSON.parse(data) : null;
@@ -939,10 +1075,9 @@
                 if (feedsData) {
                     feedsData.forEach(item => {
                         if (!item.type) item.type = 'text-img';
-                        if (item.img && !Array.isArray(item.img)) {
-                            item.img = [item.img];
-                        }
+                        if (item.img && !Array.isArray(item.img)) item.img = [item.img];
                         if (!item.img) item.img = [];
+                        if (!item.timestamp) item.timestamp = Date.now();
                     });
                     return feedsData;
                 }
@@ -953,15 +1088,18 @@
                     const oldImg1 = localStorage.getItem('amber_img_post-1');
                     
                     const migrated = [
-                        { type: 'text-img', text: oldText1 || '我拍下这张照片的时候，你还在我身边。现在照片还在，你走了。原来有些画面，从一开始就是用来怀念的。🖤', img: oldImg1 ? [oldImg1] : [] },
-                        { type: 'text-img', text: oldText2 || '你走之后，我学会了在凌晨三点给自己煮面，加两个荷包蛋，一个给你留着，凉了再倒掉。这个习惯，我改了很久都没改掉。', img: [] }
+                        { type: 'text-img', text: oldText1 || '我拍下这张照片的时候，你还在我身边。现在照片还在，你走了。原来有些画面，从一开始就是用来怀念的。🖤', img: oldImg1 ? [oldImg1] : [], timestamp: Date.now() - 1000 * 60 * 60 },
+                        { type: 'text-img', text: oldText2 || '你走之后，我学会了在凌晨三点给自己煮面，加两个荷包蛋，一个给你留着，凉了再倒掉。这个习惯，我改了很久都没改掉。', img: [], timestamp: Date.now() - 1000 * 60 * 60 * 24 }
                     ];
                     saveFeedsData(postId, migrated);
                     return migrated;
                 }
 
                 feedsData = defaultData || [];
-                feedsData.forEach(item => { if (!item.img) item.img = []; });
+                feedsData.forEach(item => { 
+                    if (!item.img) item.img = []; 
+                    if (!item.timestamp) item.timestamp = Date.now();
+                });
                 saveFeedsData(postId, feedsData);
                 return feedsData;
             }
@@ -1006,9 +1144,10 @@
 
                     headerDiv.appendChild(metaDiv);
 
+                    // 实时时间
                     const timeSpan = document.createElement('span');
                     timeSpan.className = 'feed-time';
-                    timeSpan.innerText = '· 刚刚';
+                    timeSpan.innerText = '· ' + formatTimeAgo(item.timestamp || Date.now());
                     headerDiv.appendChild(timeSpan);
 
                     feedItem.appendChild(headerDiv);
@@ -1065,6 +1204,36 @@
                                     img.src = imgSrc;
                                     imgItem.appendChild(img);
 
+                                    // 点击图片预览
+                                    img.onclick = (e) => {
+                                        e.stopPropagation();
+                                        window.openImagePreview(imgSrc);
+                                    };
+
+                                    // 如果是单图，添加滑动提示
+                                    if (imgCount === 1) {
+                                        const hint = document.createElement('div');
+                                        hint.className = 'swipe-hint';
+                                        hint.innerHTML = '<i class="fas fa-chevron-down"></i> 滑动查看完整图片';
+                                        imgItem.appendChild(hint);
+                                        
+                                        img.onload = function() {
+                                            if (this.parentElement.scrollHeight > 400) {
+                                                this.parentElement.classList.add('show-hint');
+                                                this.parentElement.addEventListener('scroll', function() {
+                                                    if (this.scrollTop + this.clientHeight >= this.scrollHeight - 10) {
+                                                        hint.style.opacity = '0';
+                                                    } else {
+                                                        hint.style.opacity = '1';
+                                                    }
+                                                });
+                                            } else {
+                                                hint.style.display = 'none';
+                                            }
+                                        };
+                                    }
+
+                                    // 编辑模式下的替换遮罩
                                     const overlay = document.createElement('div');
                                     overlay.className = 'img-edit-overlay';
                                     overlay.innerHTML = '<i class="fas fa-image"></i>';
@@ -1130,7 +1299,7 @@
                 addTextImgBtn.innerHTML = '<i class="fas fa-edit"></i> 图文';
                 addTextImgBtn.onclick = () => {
                     if(!document.body.classList.contains('edit-mode')) return;
-                    feedsData.push({ type: 'text-img', text: '新的文案...', img: [] });
+                    feedsData.push({ type: 'text-img', text: '新的文案...', img: [], timestamp: Date.now() });
                     saveFeedsData(postId, feedsData);
                     renderFeeds(postId, containerId);
                 };
@@ -1141,7 +1310,7 @@
                 addImgOnlyBtn.innerHTML = '<i class="fas fa-image"></i> 图片';
                 addImgOnlyBtn.onclick = () => {
                     if(!document.body.classList.contains('edit-mode')) return;
-                    feedsData.push({ type: 'img', text: '', img: [] });
+                    feedsData.push({ type: 'img', text: '', img: [], timestamp: Date.now() });
                     saveFeedsData(postId, feedsData);
                     renderFeeds(postId, containerId);
                 };
@@ -1152,7 +1321,7 @@
                 addTextOnlyBtn.innerHTML = '<i class="fas fa-font"></i> 文字';
                 addTextOnlyBtn.onclick = () => {
                     if(!document.body.classList.contains('edit-mode')) return;
-                    feedsData.push({ type: 'text', text: '新的文字...', img: [] });
+                    feedsData.push({ type: 'text', text: '新的文字...', img: [], timestamp: Date.now() });
                     saveFeedsData(postId, feedsData);
                     renderFeeds(postId, containerId);
                 };
@@ -1166,17 +1335,17 @@
 
                 const defaultDataMap = {
                     'feed-post-3': [
-                        { type: 'text-img', text: '收录了一些空洞的几何轨迹。', img: [] },
-                        { type: 'text-img', text: '就像我们在彼此世界留下过的交集。', img: [] }
+                        { type: 'text-img', text: '收录了一些空洞的几何轨迹。', img: [], timestamp: Date.now() - 1000 * 60 * 60 * 2 },
+                        { type: 'text-img', text: '就像我们在彼此世界留下过的交集。', img: [], timestamp: Date.now() - 1000 * 60 * 60 * 24 * 3 }
                     ],
                     'feed-post-4': [
-                        { type: 'text-img', text: '“你问我还爱不爱你，我说不爱了。”', img: [] }
+                        { type: 'text-img', text: '“你问我还爱不爱你，我说不爱了。”', img: [], timestamp: Date.now() - 1000 * 60 * 60 * 5 }
                     ],
                     'feed-post-5': [
-                        { type: 'text-img', text: '“我没有在等你，我只是暂时还没办法喜欢上别人。”', img: [] }
+                        { type: 'text-img', text: '“我没有在等你，我只是暂时还没办法喜欢上别人。”', img: [], timestamp: Date.now() - 1000 * 60 * 60 * 12 }
                     ],
                     'feed-post-6': [
-                        { type: 'text-img', text: '感谢「星海旅团」为本频道提供的独家冠名支持。', img: [] }
+                        { type: 'text-img', text: '感谢「星海旅团」为本频道提供的独家冠名支持。', img: [], timestamp: Date.now() - 1000 * 60 * 60 * 24 }
                     ]
                 };
 
@@ -1186,11 +1355,125 @@
                 renderFeeds('feed-post-6', 'feed-post-6', defaultDataMap['feed-post-6']);
             }
 
+            // ================= 须知板块逻辑 =================
+            function getAccordionData() {
+                const data = localStorage.getItem('amber_accordion');
+                return data ? JSON.parse(data) : [
+                    { id: 1, title: '互动指南与边界感', content: '欢迎来到琥珀的星空。私信前请先看主页简介，不接急单，不聊无关话题。感谢理解与尊重。<br><br>· 仅接受过良好沟通的约稿或合作。<br>· 不回答在主页中已经明确写出的问题。<br>· 互相尊重，保持舒适的距离。<br><br>（当您输入的内容超过此高度时，这里会自动出现滚动条。）' },
+                    { id: 2, title: '营业时间与回复频率', content: '通常在深夜出没，白天可能在补觉或者发呆。消息回复较慢，但看到一定会回。<br><br>· 核心活跃时间：23:00 - 03:00<br>· 周末偶尔会长时间离线。<br>· 请勿频繁催促。' }
+                ];
+            }
+            function saveAccordionData(dataArray) {
+                localStorage.setItem('amber_accordion', JSON.stringify(dataArray));
+            }
+
+            function renderAccordion() {
+                const container = document.getElementById('accordionContainer');
+                if(!container) return;
+
+                let data = getAccordionData();
+                container.innerHTML = '';
+
+                data.forEach((item, index) => {
+                    const accItem = document.createElement('div');
+                    accItem.className = 'accordion-item';
+
+                    const header = document.createElement('div');
+                    header.className = 'accordion-header';
+                    header.onclick = (e) => {
+                        if (e.target.closest('.accordion-actions')) return;
+                        accItem.classList.toggle('active');
+                    };
+
+                    const icon = document.createElement('div');
+                    icon.className = 'accordion-icon';
+                    icon.innerHTML = '<i class="fas fa-book-open"></i>';
+                    header.appendChild(icon);
+
+                    const title = document.createElement('div');
+                    title.className = 'accordion-title';
+                    title.setAttribute('contenteditable', 'false');
+                    title.innerText = item.title;
+                    title.addEventListener('blur', function() {
+                        if (!document.body.classList.contains('edit-mode')) return;
+                        let newData = getAccordionData();
+                        newData[index].title = this.innerText;
+                        saveAccordionData(newData);
+                    });
+                    header.appendChild(title);
+
+                    const actions = document.createElement('div');
+                    actions.className = 'accordion-actions';
+                    const delBtn = document.createElement('div');
+                    delBtn.className = 'acc-action-btn delete';
+                    delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    delBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        if(confirm('确定要删除这个版块吗？')) {
+                            let newData = getAccordionData();
+                            newData.splice(index, 1);
+                            saveAccordionData(newData);
+                            renderAccordion();
+                        }
+                    };
+                    actions.appendChild(delBtn);
+                    header.appendChild(actions);
+
+                    const arrow = document.createElement('i');
+                    arrow.className = 'fas fa-chevron-down accordion-arrow';
+                    header.appendChild(arrow);
+
+                    accItem.appendChild(header);
+
+                    const body = document.createElement('div');
+                    body.className = 'accordion-body';
+                    
+                    const desc = document.createElement('div');
+                    desc.className = 'accordion-desc';
+                    desc.setAttribute('contenteditable', 'false');
+                    desc.innerHTML = item.content;
+                    desc.addEventListener('blur', function() {
+                        if (!document.body.classList.contains('edit-mode')) return;
+                        let newData = getAccordionData();
+                        newData[index].content = this.innerHTML;
+                        saveAccordionData(newData);
+                    });
+                    body.appendChild(desc);
+                    accItem.appendChild(body);
+
+                    container.appendChild(accItem);
+                });
+            }
+
+            window.openAddAccordionModal = function() {
+                if(!document.body.classList.contains('edit-mode')) return;
+                document.getElementById('newAccTitle').value = '';
+                document.getElementById('newAccContent').value = '';
+                document.getElementById('addAccOverlay').classList.add('active');
+            };
+
+            window.saveNewAccordion = function() {
+                const title = document.getElementById('newAccTitle').value.trim();
+                const content = document.getElementById('newAccContent').value.trim();
+                if (!title) { alert('请输入标题'); return; }
+
+                let data = getAccordionData();
+                data.push({ id: Date.now(), title: title, content: content || '暂无内容' });
+                saveAccordionData(data);
+                renderAccordion();
+
+                document.getElementById('addAccOverlay').classList.remove('active');
+            };
+
+            // ================= 初始化加载与模式切换 =================
             function loadSavedData() {
                 const textElems = ['editName', 'editBio', 'editJoinDate', 'desc1', 'desc2'];
                 textElems.forEach(id => {
                     const saved = localStorage.getItem('amber_' + id);
-                    if (saved) document.getElementById(id).innerHTML = saved;
+                    if (saved) {
+                        const el = document.getElementById(id);
+                        if(el) el.innerHTML = saved;
+                    }
                 });
 
                 const savedUsername = localStorage.getItem('amber_username_sync');
@@ -1215,6 +1498,7 @@
                 }
 
                 initAllFeeds();
+                renderAccordion();
             }
 
             const modeToggle = document.getElementById('modeToggle');
@@ -1229,13 +1513,16 @@
                     body.classList.add('edit-mode');
                     document.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'true'));
                     document.querySelectorAll('.feed-text').forEach(el => el.setAttribute('contenteditable', 'true'));
+                    document.querySelectorAll('.accordion-title, .accordion-desc').forEach(el => el.setAttribute('contenteditable', 'true'));
                 } else {
                     body.classList.remove('edit-mode');
                     document.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'false'));
                     document.querySelectorAll('.feed-text').forEach(el => el.setAttribute('contenteditable', 'false'));
+                    document.querySelectorAll('.accordion-title, .accordion-desc').forEach(el => el.setAttribute('contenteditable', 'false'));
                 }
                 
                 initAllFeeds(); 
+                renderAccordion();
                 
                 modeBtns.forEach(btn => {
                     if (btn.dataset.mode === mode) btn.classList.add('active');
@@ -1277,6 +1564,12 @@
                     let feedsData = getFeedsData(currentEditingPostId);
                     if(feedsData && feedsData[currentEditingIndex]) {
                         feedsData[currentEditingIndex].text = newText;
+                        // 如果内容为空，则直接转为纯图片模式
+                        if (!newText.trim()) {
+                            feedsData[currentEditingIndex].type = 'img';
+                        } else if (feedsData[currentEditingIndex].type === 'img' && newText.trim()) {
+                            feedsData[currentEditingIndex].type = 'text-img';
+                        }
                         saveFeedsData(currentEditingPostId, feedsData);
                         renderFeeds(currentEditingPostId, currentEditingPostId);
                     }
@@ -1301,8 +1594,15 @@
                         const postId = target.dataset.postid;
                         const index = parseInt(target.dataset.index);
                         let feedsData = getFeedsData(postId);
-                        if(feedsData && feedsData[index] && feedsData[index].type !== 'text') {
+                        if(feedsData && feedsData[index]) {
                             feedsData[index].text = target.innerText;
+                            // 如果内容为空，则直接转为纯图片模式
+                            if (!target.innerText.trim() && feedsData[index].type === 'text-img') {
+                                feedsData[index].type = 'img';
+                                saveFeedsData(postId, feedsData);
+                                renderFeeds(postId, postId);
+                                return;
+                            }
                             saveFeedsData(postId, feedsData);
                         }
                         return;
