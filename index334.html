@@ -339,7 +339,7 @@
         body.edit-mode .feed-text-edit-btn { display: flex; }
 
         /* =========================================
-           动态网格图片排版
+           动态网格图片排版 (最多3张)
            ========================================= */
         .feed-image-grid {
             display: grid;
@@ -351,12 +351,6 @@
         .feed-image-grid[data-count="1"] { grid-template-columns: 1fr; max-width: 100%; }
         .feed-image-grid[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
         .feed-image-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
-        .feed-image-grid[data-count="4"] { grid-template-columns: repeat(2, 1fr); }
-        .feed-image-grid[data-count="5"] { grid-template-columns: repeat(3, 1fr); }
-        .feed-image-grid[data-count="6"] { grid-template-columns: repeat(3, 1fr); }
-        .feed-image-grid[data-count="7"] { grid-template-columns: repeat(3, 1fr); }
-        .feed-image-grid[data-count="8"] { grid-template-columns: repeat(3, 1fr); }
-        .feed-image-grid[data-count="9"] { grid-template-columns: repeat(3, 1fr); }
 
         .grid-image-item {
             position: relative;
@@ -518,27 +512,63 @@
         .accordion-title { 
             font-weight: 700; font-size: 0.9rem; flex: 1; 
             outline: none; border-radius: 4px; padding: 2px 4px; margin-left: -4px;
+            position: relative;
         }
+        /* 标题编辑提示 */
         body.edit-mode .accordion-title {
             background: rgba(255, 255, 255, 0.8);
             border: 1px dashed var(--c-primary-light);
             cursor: text;
         }
+        .acc-title-hint {
+            display: none;
+            position: absolute;
+            right: -16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--c-primary);
+            font-size: 0.7rem;
+            pointer-events: none;
+        }
+        body.edit-mode .accordion-title:hover .acc-title-hint { display: block; }
+
         .accordion-arrow { color: var(--c-text-muted); transition: transform 0.3s; font-size: 0.8rem; }
         .accordion-item.active .accordion-arrow { transform: rotate(180deg); }
         
-        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s; padding: 0 16px; background: #fff; }
+        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s; padding: 0 16px; background: #fff; position: relative; }
         .accordion-item.active .accordion-body { max-height: 500px; padding: 0 16px 16px; }
         
         .accordion-desc { 
             font-size: 0.85rem; color: var(--c-text-sub); line-height: 1.6; 
             border-top: 1px dashed var(--c-border); padding-top: 12px; outline: none;
             max-height: 200px; overflow-y: auto; padding-right: 6px;
+            position: relative;
         }
         .accordion-desc::-webkit-scrollbar { width: 4px; }
         .accordion-desc::-webkit-scrollbar-track { background: transparent; }
         .accordion-desc::-webkit-scrollbar-thumb { background: var(--c-primary-light); border-radius: 10px; }
-        body.edit-mode .accordion-desc { background: #f8fbff; border-radius: 8px; padding: 10px; border: 1px solid var(--c-primary-light); }
+        
+        /* 内容编辑提示 */
+        body.edit-mode .accordion-desc { 
+            background: #f8fbff; 
+            border-radius: 8px; 
+            padding: 10px; 
+            border: 1px solid var(--c-primary-light); 
+            cursor: text;
+        }
+        .acc-desc-hint {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 8px;
+            background: var(--c-primary);
+            color: #fff;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        body.edit-mode .accordion-desc:hover .acc-desc-hint { display: block; }
 
         /* 须知内的操作按钮 */
         .accordion-actions {
@@ -973,7 +1003,6 @@
         </div>
     </div>
 
-    <!-- 全屏图片预览 -->
     <div class="image-preview-overlay" id="imagePreviewOverlay">
         <div class="preview-close-btn" onclick="closeImagePreview()"><i class="fas fa-times"></i></div>
         <div class="preview-container" id="previewContainer">
@@ -1086,19 +1115,16 @@
                     previewContainer.appendChild(slide);
                 });
 
-                // 更新指示器
                 function updateIndicator() {
                     const index = Math.round(previewContainer.scrollLeft / previewContainer.clientWidth) + 1;
                     previewIndicator.textContent = `${index} / ${images.length}`;
                 }
 
-                // 初始滚动到指定位置
                 setTimeout(() => {
                     previewContainer.scrollLeft = previewContainer.clientWidth * currentIndex;
                     updateIndicator();
                 }, 50);
 
-                // 监听滚动
                 previewContainer.onscroll = updateIndicator;
 
                 imagePreviewOverlay.classList.add('active');
@@ -1327,7 +1353,6 @@
                                     img.src = imgSrc;
                                     imgItem.appendChild(img);
 
-                                    // 点击图片预览
                                     img.onclick = (e) => {
                                         e.stopPropagation();
                                         window.openImagePreview(item.img, imgIdx);
@@ -1373,7 +1398,8 @@
                                 });
                             }
 
-                            if (document.body.classList.contains('edit-mode') && imgCount < 9) {
+                            // 最多只能上传 3 张图片
+                            if (document.body.classList.contains('edit-mode') && imgCount < 3) {
                                 const addBtn = document.createElement('div');
                                 addBtn.className = 'grid-add-btn';
                                 addBtn.innerHTML = '<i class="fas fa-plus"></i>';
@@ -1515,19 +1541,21 @@
                     title.className = 'accordion-title';
                     title.setAttribute('contenteditable', 'false');
                     title.innerText = item.title;
-                    // 添加编辑提示文字
-                    const hintSpan = document.createElement('span');
-                    hintSpan.className = 'edit-hint-text';
-                    hintSpan.innerHTML = '<i class="fas fa-pen"></i> 点击修改';
-                    title.appendChild(hintSpan);
+                    
+                    // 标题编辑提示
+                    const titleHint = document.createElement('i');
+                    titleHint.className = 'fas fa-pen acc-title-hint';
+                    title.appendChild(titleHint);
                     
                     title.addEventListener('blur', function() {
                         if (!document.body.classList.contains('edit-mode')) return;
                         let newData = getAccordionData();
-                        const newTitle = this.innerText.replace('点击修改', '').trim();
-                        newData[index].title = newTitle;
-                        saveAccordionData(newData);
-                        renderAccordion();
+                        const newTitle = this.innerText.trim();
+                        if (newTitle) {
+                            newData[index].title = newTitle;
+                            saveAccordionData(newData);
+                            renderAccordion();
+                        }
                     });
                     header.appendChild(title);
 
@@ -1561,6 +1589,13 @@
                     desc.className = 'accordion-desc';
                     desc.setAttribute('contenteditable', 'false');
                     desc.innerHTML = item.content;
+                    
+                    // 内容编辑提示
+                    const descHint = document.createElement('div');
+                    descHint.className = 'acc-desc-hint';
+                    descHint.innerHTML = '<i class="fas fa-pen"></i> 点击修改';
+                    desc.appendChild(descHint);
+                    
                     desc.addEventListener('blur', function() {
                         if (!document.body.classList.contains('edit-mode')) return;
                         let newData = getAccordionData();
@@ -1794,10 +1829,10 @@
                 
                 if (currentImageIndex === -1) {
                     const currentCount = feedsData[currentPostIndex].img ? feedsData[currentPostIndex].img.length : 0;
-                    const remaining = 9 - currentCount; 
+                    const remaining = 3 - currentCount; // 最多 3 张
                     
                     if (remaining <= 0) {
-                        alert('最多只能上传 9 张图片');
+                        alert('单个帖子最多只能上传 3 张图片');
                         this.value = '';
                         return;
                     }
