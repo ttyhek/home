@@ -77,15 +77,18 @@
 
         /* 封面背景 */
         .profile-cover {
-            height: 140px;
-            background: linear-gradient(135deg, #b8dcfc 0%, #9bc9f5 40%, #c3ddfa 100%);
-            position: relative; background-size: cover; background-position: center;
+            height: 180px;
+            background: #e2e8f0;
+            position: relative; 
+            background-size: contain; 
+            background-position: center;
+            background-repeat: no-repeat;
             transition: all 0.2s;
         }
         .profile-cover::after {
             content: "✦ ✧"; position: absolute; top: 20px; right: 30px;
             font-size: 1.5rem; color: rgba(255, 255, 255, 0.7); letter-spacing: 10px;
-            pointer-events: none;
+            pointer-events: none; text-shadow: 0 0 4px rgba(0,0,0,0.2);
         }
         .cover-edit-overlay {
             position: absolute; inset: 0; background: rgba(0,0,0,0.4);
@@ -95,7 +98,7 @@
         .cover-edit-overlay i { font-size: 2rem; margin-right: 10px; }
         body.edit-mode .profile-cover:hover .cover-edit-overlay { display: flex; }
 
-        /* 头像区域 */
+        /* 头像区域（改为自适应图片） */
         .profile-header {
             padding: 0 24px; display: flex; align-items: flex-end;
             margin-top: -54px; position: relative; z-index: 5;
@@ -104,19 +107,30 @@
         .avatar-wrapper {
             position: relative; margin-right: 20px; flex-shrink: 0;
         }
+        /* 去掉死板高度，让内部图片撑开 */
         .avatar {
             width: 108px; height: 108px; border-radius: 50%;
             border: 4px solid #fff;
             box-shadow: 0 12px 24px -8px rgba(30, 58, 95, 0.3), 0 0 0 4px rgba(200, 230, 255, 0.5);
             background-color: #cce0f5;
             background-image: radial-gradient(circle at 50% 0%, #b8dcfc 0%, #6b9bd2 100%);
-            background-size: cover; background-position: center;
+            background-size: cover; /* 修改为 cover 填满圆形 */
+            background-position: center;
+            background-repeat: no-repeat;
             position: relative;
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .avatar img {
+            width: 100%; height: 100%; object-fit: cover; display: none;
         }
         .avatar::after {
             content: "✦"; position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
             font-size: 2rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.8);
         }
+        .avatar.has-img::after { display: none; } /* 有图时隐藏星星 */
+        .avatar.has-img img { display: block; }
+
         .avatar-edit-overlay {
             position: absolute; inset: 0; border-radius: 50%;
             background: rgba(0,0,0,0.4); color: white;
@@ -154,16 +168,12 @@
         body.edit-mode .bio span,
         body.edit-mode .join-date,
         body.edit-mode .post-text,
-        body.edit-mode .post-name,
-        body.edit-mode .crown-title,
-        body.edit-mode .glass-text {
+        body.edit-mode .post-name {
             background: rgba(255, 255, 255, 0.6);
             border: 1px dashed var(--c-primary-light);
             box-shadow: 0 0 0 2px rgba(107, 155, 210, 0.1);
             cursor: text;
         }
-        body.edit-mode .post-text:focus,
-        body.edit-mode .display-name:focus { background: #fff; border: 1px solid var(--c-primary); }
 
         /* 标签页 */
         .profile-tabs {
@@ -188,13 +198,20 @@
             width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; border: 2px solid #fff;
             background-color: #cce0f5;
             background-image: radial-gradient(circle at 50% 0%, #b8dcfc 0%, #6b9bd2 100%);
-            background-size: cover; background-position: center;
+            background-size: cover; 
+            background-position: center;
+            background-repeat: no-repeat;
             position: relative;
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
         }
+        .post-avatar img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .post-avatar::after {
             content: "✦"; position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
             font-size: 1rem; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.8);
         }
+        .post-avatar.has-img::after { display: none; }
+        .post-avatar.has-img img { display: block; }
 
         .post-content { flex: 1; min-width: 0; position: relative; }
         .post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
@@ -203,46 +220,6 @@
         .post-time { color: var(--c-text-muted); font-size: 0.8rem; margin-left: auto; }
         .post-text { font-size: 0.95rem; line-height: 1.7; margin-bottom: 16px; outline: none; border-radius: 8px; padding: 6px; margin-left: -6px; }
         .post-actions { display: flex; gap: 20px; }
-
-        /* 横滑容器（多图通用） */
-        .slider-container {
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            padding: 4px 0 16px;
-            scrollbar-width: none;
-        }
-        .slider-container::-webkit-scrollbar { display: none; }
-        
-        .slider-item {
-            flex: 0 0 85%;
-            scroll-snap-align: center;
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* 所有图片通用配置 */
-        .post-image, .post-img-geometric, .post-img-polaroid .polaroid-img, .post-img-dream, .post-img-crown {
-            position: relative; transition: all 0.2s;
-            background-size: cover; background-position: center;
-        }
-
-        /* 通用图片上传遮罩 */
-        .img-edit-overlay {
-            position: absolute; inset: 0; border-radius: inherit;
-            background: rgba(0,0,0,0.4); color: white;
-            display: none; align-items: center; justify-content: center; flex-direction: column;
-            cursor: pointer; z-index: 10; font-weight: 600;
-        }
-        body.edit-mode .post-image:hover .img-edit-overlay,
-        body.edit-mode .post-img-geometric:hover .img-edit-overlay,
-        body.edit-mode .polaroid-img:hover .img-edit-overlay,
-        body.edit-mode .post-img-dream:hover .img-edit-overlay,
-        body.edit-mode .post-img-crown:hover .img-edit-overlay { display: flex; }
-        .img-edit-overlay i { font-size: 2rem; margin-bottom: 8px; }
 
         /* 全局编辑按钮 */
         .global-edit-btn {
@@ -254,36 +231,137 @@
         }
         body.edit-mode .global-edit-btn { display: flex; }
 
-        /* 须知 */
+        /* 须知板块 */
         .accordion-item { background: #fff; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--c-border); overflow: hidden; }
         .accordion-header { display: flex; align-items: center; gap: 14px; padding: 18px 20px; cursor: pointer; background: rgba(250, 253, 255, 0.9); }
         .accordion-icon { width: 36px; height: 36px; border-radius: 12px; background: rgba(107, 155, 210, 0.1); color: var(--c-primary); display: flex; align-items: center; justify-content: center; }
         .accordion-title { font-weight: 700; font-size: 1rem; flex: 1; }
         .accordion-arrow { color: var(--c-text-muted); transition: transform 0.3s; }
         .accordion-item.active .accordion-arrow { transform: rotate(180deg); }
+        
         .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s; padding: 0 20px; background: #fff; }
-        .accordion-item.active .accordion-body { max-height: 500px; padding: 0 20px 20px; }
-        .accordion-desc { font-size: 0.9rem; color: var(--c-text-sub); line-height: 1.7; border-top: 1px dashed var(--c-border); padding-top: 16px; outline: none; }
+        .accordion-item.active .accordion-body { max-height: 600px; padding: 0 20px 20px; }
+        
+        .accordion-desc { 
+            font-size: 0.9rem; color: var(--c-text-sub); line-height: 1.7; 
+            border-top: 1px dashed var(--c-border); padding-top: 16px; outline: none;
+            max-height: 250px; overflow-y: auto; padding-right: 8px;
+        }
+
+        .accordion-desc::-webkit-scrollbar { width: 6px; }
+        .accordion-desc::-webkit-scrollbar-track { background: transparent; }
+        .accordion-desc::-webkit-scrollbar-thumb { background: var(--c-primary-light); border-radius: 10px; }
+
         body.edit-mode .accordion-desc { background: #f8fbff; border-radius: 8px; padding: 12px; border: 1px solid var(--c-primary-light); }
 
-        /* 特定样式 */
-        .post-image { border-radius: 16px; height: 240px; margin-bottom: 16px; }
-        .design-post { background: #fff; border-radius: var(--radius-card); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-md); position: relative; }
+        /* ===== 日常首帖图片（改为自适应图片） ===== */
+        .post-image {
+            border-radius: 16px; margin-bottom: 16px;
+            background-size: contain !important;
+            background-position: center; background-repeat: no-repeat;
+            background-color: #eef2f6;
+            position: relative;
+            width: 100%;
+            /* 移除强制高度，让内部 img 撑开 */
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            min-height: 120px;
+        }
+        .post-image img {
+            width: 100%; height: auto; display: none; object-fit: contain;
+        }
+        .post-image.has-img { background-color: transparent; min-height: 0; }
+        .post-image.has-img img { display: block; }
+        .post-image .img-placeholder {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--c-primary-dark); font-weight: 600; padding: 40px 20px;
+            pointer-events: none;
+        }
+        .post-image.has-img .img-placeholder { display: none; }
+
+        /* ===== 后四版块：图文帖子动态流 ===== */
+        .design-post {
+            background: #fff; border-radius: var(--radius-card); padding: 20px; 
+            margin-bottom: 20px; box-shadow: var(--shadow-md); position: relative;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+
+        .feed-item {
+            display: flex; flex-direction: column; gap: 12px;
+            padding-bottom: 16px; border-bottom: 1px dashed var(--c-border);
+        }
+        .feed-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .feed-text {
+            font-size: 0.95rem; line-height: 1.6; color: var(--c-text-main);
+            outline: none; padding: 4px; border-radius: 4px;
+        }
+
+        .feed-image-wrapper {
+            width: 100%;
+            border-radius: 12px;
+            background-color: #f0f4f8;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         
-        .post-img-geometric { height: 240px; background: linear-gradient(135deg, #f0f7ff, #e0edff); display: flex; align-items: center; justify-content: center; border-radius: 16px; }
+        .feed-image-wrapper img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        /* 占位提示 */
+        .img-placeholder {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px 20px; color: var(--c-primary-dark); font-weight: 600;
+            pointer-events: none;
+        }
+        .img-placeholder i { font-size: 2rem; margin-bottom: 8px; }
+
+        /* 添加按钮容器 */
+        .add-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
         
-        .post-img-polaroid { background: #fdfdfd; padding: 12px 12px 48px 12px; border-radius: 4px; margin: 10px 4px; }
-        .polaroid-img { height: 180px; background: linear-gradient(135deg, #a8cbf0, #d0e2ff); border-radius: 2px; }
-        
-        /* 话术与冠名的多图卡片，深色背景保护 */
-        .post-img-dream { height: 230px; border-radius: 16px; background: #1c2a4a; display: flex; align-items: center; justify-content: center; }
-        .glass-card { padding: 24px; background: rgba(255,255,255,0.1); border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.2); pointer-events: none; }
-        .glass-text { font-size: 1.4rem; color: #fff; font-weight: 700; letter-spacing: 3px; outline: none; }
-        
-        .post-img-crown { height: 240px; background: radial-gradient(circle at 50% 120%, #2a1b3d, #0f0c1b); display: flex; align-items: center; justify-content: center; border-radius: 16px; }
-        .crown-card { padding: 24px; background: rgba(30,25,45,0.6); border-radius: 20px; border: 1px solid rgba(212,175,55,0.4); text-align: center; pointer-events: none; }
-        .crown-icon { font-size: 2rem; color: #d4af37; margin-bottom: 10px; }
-        .crown-title { font-size: 1.3rem; font-weight: 800; letter-spacing: 4px; color: #fff; outline: none; }
+        .add-new-feed-btn {
+            flex: 1;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            padding: 16px;
+            background: rgba(245, 249, 255, 0.6);
+            border: 2px dashed var(--c-primary-light);
+            border-radius: 16px; color: var(--c-primary-dark);
+            font-weight: 700; cursor: pointer; transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+        .add-new-feed-btn:hover { background: rgba(220, 235, 255, 0.9); }
+        .add-new-feed-btn i { font-size: 1.5rem; margin-bottom: 8px; }
+
+        .delete-feed-btn {
+            display: none; /* 默认隐藏 */
+            color: #ef4444; font-size: 0.8rem; cursor: pointer; 
+            text-align: right; padding: 4px; font-weight: 600;
+        }
+        body.edit-mode .delete-feed-btn { display: block; } /* 仅编辑模式可见 */
+
+        /* 图片上传遮罩 */
+        .img-edit-overlay {
+            position: absolute; inset: 0; border-radius: inherit;
+            background: rgba(0,0,0,0.4); color: white;
+            display: none; align-items: center; justify-content: center; flex-direction: column;
+            cursor: pointer; z-index: 10; font-weight: 600;
+        }
+        body.edit-mode .post-image:hover .img-edit-overlay,
+        body.edit-mode .feed-image-wrapper:hover .img-edit-overlay { display: flex; }
+        .img-edit-overlay i { font-size: 2rem; margin-bottom: 8px; }
 
         .end-note { text-align: center; padding: 30px 0 50px; color: var(--c-text-muted); font-size: 0.8rem; }
 
@@ -337,7 +415,10 @@
         
         <div class="profile-header">
             <div class="avatar-wrapper" id="avatarWrapper">
-                <div class="avatar" id="mainAvatar"></div>
+                <!-- 头像改为了 img 标签以自适应 -->
+                <div class="avatar" id="mainAvatar">
+                    <img id="mainAvatarImg" src="" alt="">
+                </div>
                 <div class="avatar-edit-overlay" id="triggerAvatarUpload"><i class="fas fa-camera"></i></div>
                 <input type="file" id="avatarInput" accept="image/*" class="hidden-file">
             </div>
@@ -351,7 +432,7 @@
 
         <div class="user-info">
             <div class="display-name" id="editName" contenteditable="false">琥珀 <i class="fas fa-certificate" style="color:var(--c-primary)"></i></div>
-            <div class="username" id="editUsername" contenteditable="false"><i class="fas fa-at"></i> amber_starry</div>
+            <div class="username" id="editUsername" contenteditable="false"><i class="fas fa-at"></i> <span id="usernameDisplay">amber_starry</span></div>
             
             <div class="bio" id="editBio">
                 <span contenteditable="false"><i class="fas fa-birthday-cake"></i> 21岁</span>
@@ -379,18 +460,21 @@
             <div class="tab-panel active" id="tab1">
                 <div class="panel-scroll" style="padding: 0;">
                     <div class="post" id="post-1">
-                        <div class="post-avatar"></div>
+                        <div class="post-avatar" id="postAvatar1"><img id="postAvatar1Img" src="" alt=""></div>
                         <div class="post-content">
                             <div class="global-edit-btn" onclick="openEditModal('post-1')"><i class="fas fa-pencil-alt"></i></div>
                             <div class="post-header">
                                 <span class="post-name" contenteditable="false">琥珀</span>
-                                <span class="post-username">@amber_starry</span>
+                                <span class="post-username sync-username">@amber_starry</span>
                                 <span class="post-time">· 刚刚</span>
                             </div>
                             <div class="post-text" id="text-post-1" contenteditable="false">
                                 我拍下这张照片的时候，你还在我身边。现在照片还在，你走了。原来有些画面，从一开始就是用来怀念的。🖤
                             </div>
-                            <div class="post-image" id="img-post-1" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22 viewBox=%220 0 1080 675%22><rect width=%221080%22 height=%22675%22 fill=%22%23a2cbf0%22/><circle cx=%22540%22 cy=%22300%22 r=%22180%22 fill=%22%23ffffff%22 opacity=%220.15%22/><text x=%2250%25%22 y=%2255%25%22 font-family=%22sans-serif%22 font-size=%2228%22 fill=%22%23ffffff%22 text-anchor=%22middle%22 opacity=%220.9%22>默认星空图</text></svg>');">
+                            <!-- 日常首帖图片改为了 img 标签以自适应 -->
+                            <div class="post-image" id="img-post-1">
+                                <div class="img-placeholder"><i class="fas fa-camera"></i>点击上传配图</div>
+                                <img id="img-post-1-tag" src="" alt="">
                                 <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-1', 'amber_img_post-1')">
                                     <i class="fas fa-image"></i> 点击替换配图
                                 </div>
@@ -403,12 +487,12 @@
                     </div>
 
                     <div class="post" id="post-2">
-                        <div class="post-avatar"></div>
+                        <div class="post-avatar" id="postAvatar2"><img id="postAvatar2Img" src="" alt=""></div>
                         <div class="post-content">
                             <div class="global-edit-btn" onclick="openEditModal('post-2')"><i class="fas fa-pencil-alt"></i></div>
                             <div class="post-header">
                                 <span class="post-name" contenteditable="false">琥珀</span>
-                                <span class="post-username">@amber_starry</span>
+                                <span class="post-username sync-username">@amber_starry</span>
                                 <span class="post-time">· 昨天</span>
                             </div>
                             <div class="post-text" id="text-post-2" contenteditable="false">
@@ -437,7 +521,8 @@
                                 欢迎来到琥珀的星空。私信前请先看主页简介，不接急单，不聊无关话题。感谢理解与尊重。<br><br>
                                 · 仅接受过良好沟通的约稿或合作。<br>
                                 · 不回答在主页中已经明确写出的问题。<br>
-                                · 互相尊重，保持舒适的距离。
+                                · 互相尊重，保持舒适的距离。<br><br>
+                                （当您输入的内容超过此高度时，这里会自动出现滚动条。）
                             </div>
                         </div>
                     </div>
@@ -459,122 +544,31 @@
                 </div>
             </div>
 
-            <!-- 头牌面板（横滑多图） -->
+            <!-- 头牌面板 -->
             <div class="tab-panel" id="tab3">
                 <div class="panel-scroll">
-                    <div class="design-post" id="post-3">
-                        <div class="global-edit-btn" onclick="openEditModal('post-3')"><i class="fas fa-pencil-alt"></i></div>
-                        <div class="post-header"><span class="post-name" contenteditable="false">琥珀</span><span class="post-username">@amber_starry</span></div>
-                        <div class="post-text" id="text-post-3" contenteditable="false">收录了一些空洞的几何轨迹。</div>
-                        
-                        <div class="slider-container">
-                            <div class="slider-item">
-                                <div class="post-img-geometric" id="img-post-3-1">
-                                    <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-3-1', 'amber_img_post-3-1')">
-                                        <i class="fas fa-image"></i> 点击替换配图 1
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="slider-item">
-                                <div class="post-img-geometric" id="img-post-3-2" style="background: linear-gradient(135deg, #fff5f5, #ffe0e0);">
-                                    <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-3-2', 'amber_img_post-3-2')">
-                                        <i class="fas fa-image"></i> 点击替换配图 2
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="design-post" id="feed-post-3"></div>
                 </div>
             </div>
 
             <!-- 板评面板 -->
             <div class="tab-panel" id="tab4">
                 <div class="panel-scroll">
-                    <div class="design-post" id="post-4">
-                        <div class="global-edit-btn" onclick="openEditModal('post-4')"><i class="fas fa-pencil-alt"></i></div>
-                        <div class="post-header"><span class="post-name" contenteditable="false">深夜电台</span></div>
-                        <div class="post-text" id="text-post-4" contenteditable="false">“你问我还爱不爱你，我说不爱了。”</div>
-                        <div class="post-img-polaroid">
-                            <div class="polaroid-img" id="img-post-4">
-                                <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-4', 'amber_img_post-4')">
-                                    <i class="fas fa-image"></i> 点击替换照片
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="design-post" id="feed-post-4"></div>
                 </div>
             </div>
 
-            <!-- 话术面板（升级为多图轮播） -->
+            <!-- 话术面板 -->
             <div class="tab-panel" id="tab5">
                 <div class="panel-scroll">
-                    <div class="design-post" id="post-5">
-                        <div class="global-edit-btn" onclick="openEditModal('post-5')"><i class="fas fa-pencil-alt"></i></div>
-                        <div class="post-header"><span class="post-name" contenteditable="false">琥珀</span></div>
-                        <div class="post-text" id="text-post-5" contenteditable="false">“我没有在等你，我只是暂时还没办法喜欢上别人。”</div>
-                        
-                        <div class="slider-container">
-                            <!-- 图1：原有星空卡片 -->
-                            <div class="slider-item">
-                                <div class="post-img-dream" id="img-post-5-1">
-                                    <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-5-1', 'amber_img_post-5-1', true)">
-                                        <i class="fas fa-image"></i> 点击替换背景图 1
-                                    </div>
-                                    <div class="glass-card"><p class="glass-text" contenteditable="false">“ 别 回 来 ”</p></div>
-                                </div>
-                            </div>
-                            <!-- 图2：新增上传位 -->
-                            <div class="slider-item">
-                                <div class="post-img-dream" id="img-post-5-2">
-                                    <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-5-2', 'amber_img_post-5-2', true)">
-                                        <i class="fas fa-image"></i> 点击替换背景图 2
-                                    </div>
-                                    <div class="glass-card"><p class="glass-text" contenteditable="false">“ 遗 憾 ”</p></div>
-                                </div>
-                            </div>
-                            <!-- 图3：新增上传位 -->
-                            <div class="slider-item">
-                                <div class="post-img-dream" id="img-post-5-3">
-                                    <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-5-3', 'amber_img_post-5-3', true)">
-                                        <i class="fas fa-image"></i> 点击替换背景图 3
-                                    </div>
-                                    <div class="glass-card"><p class="glass-text" contenteditable="false">“ 释 怀 ”</p></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="design-post" id="feed-post-5"></div>
                 </div>
             </div>
 
-            <!-- 冠名面板（升级为多图轮播） -->
+            <!-- 冠名面板 -->
             <div class="tab-panel" id="tab6">
                 <div class="panel-scroll">
-                    <div class="design-post" id="post-6">
-                        <div class="global-edit-btn" onclick="openEditModal('post-6')"><i class="fas fa-pencil-alt"></i></div>
-                        <div class="post-header"><span class="post-name" contenteditable="false">琥珀</span></div>
-                        <div class="post-text" id="text-post-6" contenteditable="false">感谢「星海旅团」为本频道提供的独家冠名支持。</div>
-                        
-                        <div class="slider-container">
-                            <!-- 图1：原有金卡 -->
-                            <div class="slider-item">
-                                <div class="post-img-crown" id="img-post-6-1">
-                                    <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-6-1', 'amber_img_post-6-1', true)">
-                                        <i class="fas fa-image"></i> 点击替换背景图 1
-                                    </div>
-                                    <div class="crown-card"><div class="crown-icon"><i class="fas fa-crown"></i></div><div class="crown-title" contenteditable="false">星海旅团</div></div>
-                                </div>
-                            </div>
-                            <!-- 图2：新增上传位 -->
-                            <div class="slider-item">
-                                <div class="post-img-crown" id="img-post-6-2">
-                                    <div class="img-edit-overlay" onclick="triggerImgUpload('img-post-6-2', 'amber_img_post-6-2', true)">
-                                        <i class="fas fa-image"></i> 点击替换背景图 2
-                                    </div>
-                                    <div class="crown-card"><div class="crown-icon"><i class="fas fa-mug-hot"></i></div><div class="crown-title" contenteditable="false">拾光咖啡</div></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="design-post" id="feed-post-6"></div>
                 </div>
             </div>
         </div>
@@ -597,7 +591,7 @@
         </div>
     </div>
 
-    <!-- 帖子图文编辑弹窗 -->
+    <!-- 帖子文字编辑弹窗 -->
     <div class="pwd-overlay" id="editPostOverlay">
         <div class="pwd-card" style="max-width: 380px; text-align: left;">
             <div class="pwd-title" style="text-align: center; margin-bottom: 20px;">编辑帖子内容</div>
@@ -620,66 +614,240 @@
             let currentEditPostId = null;
             let currentUploadTargetId = null;
             let currentUploadStorageKey = null;
-            let isDarkCard = false;
             
             const SECRET_KEY = '3344';
 
+            // ================= 同步用户名逻辑 =================
+            function syncUsername(newName) {
+                document.querySelectorAll('.sync-username').forEach(el => {
+                    el.textContent = '@' + newName;
+                });
+                localStorage.setItem('amber_username_sync', newName);
+            }
+
+            // ================= 数据存储结构 (图文帖子) =================
+            // 结构：amber_feeds_{postId} = [ { type: 'text-img', text: '文案', img: 'base64' }, { type: 'img', img: 'base64' }, ... ]
+            function getFeedsData(postId) {
+                const data = localStorage.getItem('amber_feeds_' + postId);
+                return data ? JSON.parse(data) : null;
+            }
+            function saveFeedsData(postId, dataArray) {
+                try {
+                    localStorage.setItem('amber_feeds_' + postId, JSON.stringify(dataArray));
+                } catch(e) {
+                    alert('图片总量过大，无法保存到本地。请精简一些图片。');
+                }
+            }
+
+            // ================= 渲染图文帖子动态 =================
+            function renderFeeds(postId, containerId) {
+                const container = document.getElementById(containerId);
+                if(!container) return;
+
+                let feedsData = getFeedsData(postId);
+                const currentUsername = document.getElementById('usernameDisplay').innerText || 'amber_starry';
+                
+                // 兼容旧版本无类型的数据
+                if(feedsData) {
+                    feedsData.forEach(item => {
+                        if (!item.type) item.type = 'text-img';
+                    });
+                }
+
+                if(!feedsData) {
+                    const defaultDataMap = {
+                        'feed-post-3': [
+                            { type: 'text-img', text: '收录了一些空洞的几何轨迹。', img: '' },
+                            { type: 'text-img', text: '就像我们在彼此世界留下过的交集。', img: '' }
+                        ],
+                        'feed-post-4': [
+                            { type: 'text-img', text: '“你问我还爱不爱你，我说不爱了。”', img: '' }
+                        ],
+                        'feed-post-5': [
+                            { type: 'text-img', text: '“我没有在等你，我只是暂时还没办法喜欢上别人。”', img: '' }
+                        ],
+                        'feed-post-6': [
+                            { type: 'text-img', text: '感谢「星海旅团」为本频道提供的独家冠名支持。', img: '' }
+                        ]
+                    };
+                    feedsData = defaultDataMap[containerId] || [];
+                    saveFeedsData(postId, feedsData);
+                }
+
+                container.innerHTML = '';
+
+                // 1. 渲染每个帖子项
+                feedsData.forEach((item, index) => {
+                    const feedItem = document.createElement('div');
+                    feedItem.className = 'feed-item';
+
+                    // 头部信息 (所有模式共享)
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'post-header';
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'post-name';
+                    nameSpan.setAttribute('contenteditable', 'false');
+                    nameSpan.innerText = '琥珀';
+                    headerDiv.appendChild(nameSpan);
+
+                    const usernameSpan = document.createElement('span');
+                    usernameSpan.className = 'post-username sync-username';
+                    usernameSpan.innerText = '@' + currentUsername;
+                    headerDiv.appendChild(usernameSpan);
+
+                    const timeSpan = document.createElement('span');
+                    timeSpan.className = 'post-time';
+                    timeSpan.innerText = '· 刚刚';
+                    headerDiv.appendChild(timeSpan);
+
+                    feedItem.appendChild(headerDiv);
+
+                    // === 根据模式渲染文案 ===
+                    if (item.type === 'text-img') {
+                        const textDiv = document.createElement('div');
+                        textDiv.className = 'feed-text';
+                        textDiv.setAttribute('contenteditable', 'false');
+                        textDiv.dataset.postid = postId;
+                        textDiv.dataset.index = index;
+                        textDiv.innerText = item.text || '在这里输入文案...';
+                        feedItem.appendChild(textDiv);
+                    }
+
+                    // === 图片区 (所有模式共享) ===
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.className = 'feed-image-wrapper';
+                    
+                    if(item.img) {
+                        const img = document.createElement('img');
+                        img.src = item.img;
+                        imgWrapper.appendChild(img);
+                    } else {
+                        imgWrapper.innerHTML = `<div class="img-placeholder"><i class="fas fa-camera"></i>点击上传配图</div>`;
+                    }
+
+                    imgWrapper.onclick = () => {
+                        if(!document.body.classList.contains('edit-mode')) return;
+                        currentUploadTargetId = postId;
+                        currentUploadStorageKey = 'feed-img-' + index;
+                        document.getElementById('globalImgInput').click();
+                    };
+                    feedItem.appendChild(imgWrapper);
+
+                    // === 删除按钮 ===
+                    if(feedsData.length > 1) {
+                        const deleteBtn = document.createElement('div');
+                        deleteBtn.className = 'delete-feed-btn';
+                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i> 删除这组图文';
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            if(!document.body.classList.contains('edit-mode')) return;
+                            if(confirm('确定要删除这组图文吗？')) {
+                                feedsData.splice(index, 1);
+                                saveFeedsData(postId, feedsData);
+                                renderFeeds(postId, containerId);
+                            }
+                        };
+                        feedItem.appendChild(deleteBtn);
+                    }
+
+                    container.appendChild(feedItem);
+                });
+
+                // 2. 添加新图文或图片的按钮组
+                const addActions = document.createElement('div');
+                addActions.className = 'add-actions';
+
+                // 添加图文按钮
+                const addTextImgBtn = document.createElement('div');
+                addTextImgBtn.className = 'add-new-feed-btn';
+                addTextImgBtn.innerHTML = '<i class="fas fa-edit"></i> 添加图文';
+                addTextImgBtn.onclick = () => {
+                    if(!document.body.classList.contains('edit-mode')) return;
+                    feedsData.push({ type: 'text-img', text: '新的文案...', img: '' });
+                    saveFeedsData(postId, feedsData);
+                    renderFeeds(postId, containerId);
+                };
+                addActions.appendChild(addTextImgBtn);
+
+                // 添加纯图片按钮
+                const addImgOnlyBtn = document.createElement('div');
+                addImgOnlyBtn.className = 'add-new-feed-btn';
+                addImgOnlyBtn.innerHTML = '<i class="fas fa-image"></i> 添加图片';
+                addImgOnlyBtn.onclick = () => {
+                    if(!document.body.classList.contains('edit-mode')) return;
+                    feedsData.push({ type: 'img', text: '', img: '' });
+                    saveFeedsData(postId, feedsData);
+                    renderFeeds(postId, containerId);
+                };
+                addActions.appendChild(addImgOnlyBtn);
+
+                container.appendChild(addActions);
+            }
+
+            function initAllFeeds() {
+                renderFeeds('feed-post-3', 'feed-post-3');
+                renderFeeds('feed-post-4', 'feed-post-4');
+                renderFeeds('feed-post-5', 'feed-post-5');
+                renderFeeds('feed-post-6', 'feed-post-6');
+            }
+
             // 初始化加载本地存储
             function loadSavedData() {
-                // 文字读取
-                const textElems = ['editName', 'editUsername', 'editBio', 'editJoinDate', 'desc1', 'desc2'];
+                // 1. 恢复基础文本
+                const textElems = ['editName', 'editBio', 'editJoinDate', 'desc1', 'desc2'];
                 textElems.forEach(id => {
                     const saved = localStorage.getItem('amber_' + id);
                     if (saved) document.getElementById(id).innerHTML = saved;
                 });
 
-                for (let i = 1; i <= 6; i++) {
-                    const saved = localStorage.getItem('amber_text_post-' + i);
-                    if (saved) document.getElementById('text-post-' + i).innerHTML = saved;
+                // 2. 恢复用户名
+                const savedUsername = localStorage.getItem('amber_username_sync');
+                if (savedUsername) {
+                    document.getElementById('usernameDisplay').textContent = savedUsername;
+                    syncUsername(savedUsername);
+                } else {
+                    const defaultName = document.getElementById('usernameDisplay').textContent;
+                    syncUsername(defaultName);
                 }
 
-                // 封面读取
+                // 3. 恢复日常文本
+                for (let i = 1; i <= 2; i++) {
+                    const saved = localStorage.getItem('amber_text_post-' + i);
+                    if (saved) {
+                        const target = document.getElementById('text-post-' + i);
+                        if(target) target.innerHTML = saved;
+                    }
+                }
+
+                // 4. 恢复图片
                 const savedCover = localStorage.getItem('amber_cover_bg');
                 if (savedCover) {
                     document.getElementById('profileCover').style.backgroundImage = `url(${savedCover})`;
                 }
 
-                // 主头像及所有帖子头像同步读取
                 const savedAvatar = localStorage.getItem('amber_main_avatar');
                 if (savedAvatar) {
-                    document.getElementById('mainAvatar').style.backgroundImage = `url(${savedAvatar})`;
+                    // 主头像
+                    const mainAvImg = document.getElementById('mainAvatarImg');
+                    mainAvImg.src = savedAvatar;
+                    document.getElementById('mainAvatar').classList.add('has-img');
+                    // 帖子小头像
                     document.querySelectorAll('.post-avatar').forEach(el => {
-                        el.style.backgroundImage = `url(${savedAvatar})`;
-                        el.style.setProperty('background-image', `url(${savedAvatar})`, 'important');
+                        el.classList.add('has-img');
+                        el.querySelector('img').src = savedAvatar;
                     });
                 }
 
-                // 所有图片区域读取
-                const imgKeys = [
-                    { id: 'img-post-1', key: 'amber_img_post-1' },
-                    { id: 'img-post-3-1', key: 'amber_img_post-3-1' },
-                    { id: 'img-post-3-2', key: 'amber_img_post-3-2' },
-                    { id: 'img-post-4', key: 'amber_img_post-4' },
-                    { id: 'img-post-5-1', key: 'amber_img_post-5-1', dark: true },
-                    { id: 'img-post-5-2', key: 'amber_img_post-5-2', dark: true },
-                    { id: 'img-post-5-3', key: 'amber_img_post-5-3', dark: true },
-                    { id: 'img-post-6-1', key: 'amber_img_post-6-1', dark: true },
-                    { id: 'img-post-6-2', key: 'amber_img_post-6-2', dark: true }
-                ];
+                const img1 = localStorage.getItem('amber_img_post-1');
+                if(img1) {
+                    const imgEl = document.getElementById('img-post-1');
+                    const imgTag = document.getElementById('img-post-1-tag');
+                    imgTag.src = img1;
+                    imgEl.classList.add('has-img');
+                }
 
-                imgKeys.forEach(item => {
-                    const savedImg = localStorage.getItem(item.key);
-                    if (savedImg) {
-                        const targetEl = document.getElementById(item.id);
-                        if(targetEl) {
-                             if(item.dark) {
-                                 targetEl.style.background = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${savedImg}) center/cover`;
-                             } else {
-                                 targetEl.style.backgroundImage = `url(${savedImg})`;
-                             }
-                        }
-                    }
-                });
+                initAllFeeds();
             }
 
             // 模式切换
@@ -694,10 +862,14 @@
                 if (mode === 'edit') {
                     body.classList.add('edit-mode');
                     document.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'true'));
+                    document.querySelectorAll('.feed-text').forEach(el => el.setAttribute('contenteditable', 'true'));
                 } else {
                     body.classList.remove('edit-mode');
                     document.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'false'));
+                    document.querySelectorAll('.feed-text').forEach(el => el.setAttribute('contenteditable', 'false'));
                 }
+                
+                initAllFeeds(); // 重新渲染控制删除和添加按钮的显示
                 
                 modeBtns.forEach(btn => {
                     if (btn.dataset.mode === mode) btn.classList.add('active');
@@ -733,23 +905,45 @@
             document.getElementById('pwdCancel').addEventListener('click', () => pwdOverlay.classList.remove('active'));
             pwdInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('pwdConfirm').click(); });
 
-            // 文字自动保存
-            document.querySelectorAll('[contenteditable]').forEach(el => {
-                el.addEventListener('blur', function() {
-                    if (this.id) {
-                        localStorage.setItem('amber_' + this.id, this.innerHTML);
+            // 监听文字输入
+            document.addEventListener('blur', function(e) {
+                const target = e.target;
+                if (target.hasAttribute('contenteditable') && target.getAttribute('contenteditable') === 'true') {
+                    
+                    if (target.id === 'editUsername') {
+                        const rawText = target.innerText.replace('@', '').trim();
+                        if (rawText === '') return;
+                        syncUsername(rawText);
+                        target.innerHTML = `<i class="fas fa-at"></i> <span id="usernameDisplay">${rawText}</span>`;
+                        initAllFeeds();
+                        return;
+                    }
+
+                    if (target.classList.contains('feed-text')) {
+                        const postId = target.dataset.postid;
+                        const index = parseInt(target.dataset.index);
+                        let feedsData = getFeedsData(postId);
+                        if(feedsData && feedsData[index]) {
+                            feedsData[index].text = target.innerText;
+                            saveFeedsData(postId, feedsData);
+                        }
+                        return;
+                    }
+
+                    if (target.id) {
+                        localStorage.setItem('amber_' + target.id, target.innerHTML);
                     } else {
-                        const parentPost = this.closest('.post, .design-post');
-                        if (parentPost && parentPost.id && this.classList.contains('post-text')) {
-                            localStorage.setItem('amber_text_' + parentPost.id, this.innerHTML);
+                        const parentPost = target.closest('.post, .design-post');
+                        if (parentPost && parentPost.id && target.classList.contains('post-text')) {
+                            localStorage.setItem('amber_text_' + parentPost.id, target.innerHTML);
                         }
                     }
-                });
-            });
+                }
+            }, true);
 
-            // ================= 图片上传通用逻辑 =================
+            // ================= 图片上传 =================
             
-            // 1. 上传封面
+            // 封面
             const coverInput = document.getElementById('coverInput');
             document.getElementById('triggerCoverUpload').addEventListener('click', () => {
                 if(body.classList.contains('edit-mode')) coverInput.click();
@@ -766,7 +960,7 @@
                 reader.readAsDataURL(file);
             });
 
-            // 2. 上传主头像 & 全局同步
+            // 主头像
             const avatarInput = document.getElementById('avatarInput');
             document.getElementById('triggerAvatarUpload').addEventListener('click', () => {
                 if(body.classList.contains('edit-mode')) avatarInput.click();
@@ -778,13 +972,15 @@
                 reader.onload = function(event) {
                     const base64 = event.target.result;
                     
-                    const mainAv = document.getElementById('mainAvatar');
-                    mainAv.style.backgroundImage = `url(${base64})`;
-                    mainAv.style.setProperty('background-image', `url(${base64})`, 'important');
+                    // 主头像
+                    const mainAvImg = document.getElementById('mainAvatarImg');
+                    mainAvImg.src = base64;
+                    document.getElementById('mainAvatar').classList.add('has-img');
                     
+                    // 帖子小头像
                     document.querySelectorAll('.post-avatar').forEach(el => {
-                        el.style.backgroundImage = `url(${base64})`;
-                        el.style.setProperty('background-image', `url(${base64})`, 'important');
+                        el.classList.add('has-img');
+                        el.querySelector('img').src = base64;
                     });
                     
                     try { localStorage.setItem('amber_main_avatar', base64); } catch(err) { alert('图片太大，无法保存'); }
@@ -792,12 +988,11 @@
                 reader.readAsDataURL(file);
             });
 
-            // 3. 通用帖子图片替换
-            window.triggerImgUpload = function(targetId, storageKey, isDark = false) {
+            // 通用图片上传
+            window.triggerImgUpload = function(targetId, storageKey) {
                 if(!body.classList.contains('edit-mode')) return;
                 currentUploadTargetId = targetId;
                 currentUploadStorageKey = storageKey;
-                isDarkCard = isDark;
                 document.getElementById('globalImgInput').click();
             };
 
@@ -807,23 +1002,34 @@
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const base64 = event.target.result;
-                    const targetEl = document.getElementById(currentUploadTargetId);
                     
-                    if(isDarkCard) {
-                         targetEl.style.background = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${base64}) center/cover`;
-                    } else {
-                         targetEl.style.backgroundImage = `url(${base64})`;
+                    // 1. 日常页单图
+                    if(currentUploadTargetId === 'img-post-1') {
+                        const imgTag = document.getElementById('img-post-1-tag');
+                        imgTag.src = base64;
+                        document.getElementById('img-post-1').classList.add('has-img');
+                        try { localStorage.setItem(currentUploadStorageKey, base64); } catch(err) { alert('图片太大'); }
+                    } 
+                    // 2. 图文流图片
+                    else if(currentUploadStorageKey && currentUploadStorageKey.startsWith('feed-img-')) {
+                        const postId = currentUploadTargetId;
+                        const index = parseInt(currentUploadStorageKey.replace('feed-img-', ''));
+                        let feedsData = getFeedsData(postId);
+                        if(feedsData && feedsData[index]) {
+                            feedsData[index].img = base64;
+                            saveFeedsData(postId, feedsData);
+                            renderFeeds(postId, postId);
+                        }
                     }
-                    
-                    try { localStorage.setItem(currentUploadStorageKey, base64); } catch(err) { alert('图片太大，无法保存'); }
                     
                     this.value = '';
                 };
                 reader.readAsDataURL(file);
             });
 
-            // 帖子文字编辑弹窗
+            // 日常文字编辑弹窗
             window.openEditModal = function(postId) {
+                if(!body.classList.contains('edit-mode')) return;
                 currentEditPostId = postId;
                 const textEl = document.getElementById('text-' + postId);
                 document.getElementById('editPostTextArea').value = textEl ? textEl.innerText : '';
@@ -841,7 +1047,7 @@
                 if (body.classList.contains('edit-mode')) setMode('edit');
             };
 
-            // 页签与折叠
+            // 页签切换与折叠
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', function() {
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
