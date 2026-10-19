@@ -83,12 +83,12 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
-        /* 封面背景（保持完整自适应） */
+        /* 封面背景（自动填充 cover） */
         .profile-cover {
             height: 150px;
             background: #e2e8f0;
             position: relative; 
-            background-size: contain; 
+            background-size: cover; /* 改为 cover 铺满 */
             background-position: center;
             background-repeat: no-repeat;
             transition: all 0.2s;
@@ -183,18 +183,16 @@
             cursor: text;
         }
 
-        /* 标签页 */
+        /* 标签页 (均匀分布，不滑动) */
         .profile-tabs {
-            display: flex; border-bottom: 1px solid var(--c-border); padding: 0 16px;
-            gap: 4px; overflow-x: auto; scrollbar-width: none;
+            display: flex; border-bottom: 1px solid var(--c-border); padding: 0 8px;
             background: rgba(255, 255, 255, 0.8); position: sticky; top: 60px; z-index: 15; backdrop-filter: blur(8px);
-            -webkit-overflow-scrolling: touch;
+            justify-content: space-around;
         }
-        .profile-tabs::-webkit-scrollbar { display: none; }
         .tab { 
-            padding: 14px 10px 12px; font-weight: 700; font-size: 0.85rem; 
+            padding: 14px 8px 12px; font-weight: 700; font-size: 0.85rem; 
             color: var(--c-text-sub); border-bottom: 3px solid transparent; 
-            cursor: pointer; flex-shrink: 0; white-space: nowrap;
+            cursor: pointer; flex: 1; text-align: center; white-space: nowrap;
         }
         .tab.active { color: var(--c-primary-dark); border-bottom-color: var(--c-primary-dark); font-weight: 800; }
 
@@ -285,7 +283,7 @@
 
         /* 图片占位提示（仅编辑模式显示） */
         .img-placeholder {
-            display: none; /* 默认隐藏 */
+            display: none; 
             flex-direction: column; align-items: center; justify-content: center;
             padding: 30px 16px; color: var(--c-primary-dark); font-weight: 600;
             pointer-events: none; font-size: 0.85rem;
@@ -399,8 +397,8 @@
             .bio { font-size: 0.8rem; gap: 8px 12px; padding: 10px 12px; }
             .join-date { gap: 8px; font-size: 0.7rem; margin-top: 8px; }
             
-            .profile-tabs { padding: 0 12px; top: 56px; }
-            .tab { padding: 12px 8px 10px; font-size: 0.8rem; }
+            .profile-tabs { padding: 0 4px; top: 56px; }
+            .tab { padding: 12px 4px 10px; font-size: 0.75rem; }
             
             .panel-scroll { padding: 12px 12px 30px; }
             
@@ -440,7 +438,7 @@
             .stat-item { padding: 4px 6px; }
             .stat-number { font-size: 0.8rem; }
             .stat-label { font-size: 0.55rem; }
-            .tab { font-size: 0.75rem; padding: 10px 6px; }
+            .tab { font-size: 0.7rem; padding: 10px 2px; }
             .feed-name { font-size: 0.8rem; }
             .feed-text { font-size: 0.75rem; }
         }
@@ -508,7 +506,7 @@
         </div>
 
         <div class="tab-panels">
-            <!-- 日常面板（统一样式） -->
+            <!-- 日常面板 -->
             <div class="tab-panel active" id="tab1">
                 <div class="panel-scroll">
                     <div class="design-post" id="feed-post-1"></div>
@@ -708,7 +706,7 @@
                     feedItem.appendChild(headerDiv);
 
                     // 文案
-                    if (item.type === 'text-img') {
+                    if (item.type === 'text-img' || item.type === 'text') {
                         const textDiv = document.createElement('div');
                         textDiv.className = 'feed-text';
                         textDiv.setAttribute('contenteditable', 'false');
@@ -718,28 +716,29 @@
                         feedItem.appendChild(textDiv);
                     }
 
-                    // 图片区
-                    const imgWrapper = document.createElement('div');
-                    imgWrapper.className = 'feed-image-wrapper';
-                    
-                    if(item.img) {
-                        const img = document.createElement('img');
-                        img.src = item.img;
-                        imgWrapper.appendChild(img);
-                    } else {
-                        // 占位提示（仅编辑模式显示，依赖 CSS）
-                        imgWrapper.innerHTML = `<div class="img-placeholder"><i class="fas fa-camera"></i>点击上传配图</div>`;
+                    // 图片区 (如果类型不是 text)
+                    if (item.type !== 'text') {
+                        const imgWrapper = document.createElement('div');
+                        imgWrapper.className = 'feed-image-wrapper';
+                        
+                        if(item.img) {
+                            const img = document.createElement('img');
+                            img.src = item.img;
+                            imgWrapper.appendChild(img);
+                        } else {
+                            imgWrapper.innerHTML = `<div class="img-placeholder"><i class="fas fa-camera"></i>点击上传配图</div>`;
+                        }
+
+                        imgWrapper.onclick = () => {
+                            if(!document.body.classList.contains('edit-mode')) return;
+                            currentUploadTargetId = postId;
+                            currentUploadStorageKey = 'feed-img-' + index;
+                            document.getElementById('globalImgInput').click();
+                        };
+                        feedItem.appendChild(imgWrapper);
                     }
 
-                    imgWrapper.onclick = () => {
-                        if(!document.body.classList.contains('edit-mode')) return;
-                        currentUploadTargetId = postId;
-                        currentUploadStorageKey = 'feed-img-' + index;
-                        document.getElementById('globalImgInput').click();
-                    };
-                    feedItem.appendChild(imgWrapper);
-
-                    // 删除按钮（仅编辑模式显示）
+                    // 删除按钮
                     if(feedsData.length > 1) {
                         const deleteBtn = document.createElement('div');
                         deleteBtn.className = 'delete-feed-btn';
@@ -759,10 +758,11 @@
                     container.appendChild(feedItem);
                 });
 
-                // 添加按钮组（仅编辑模式显示）
+                // 添加按钮组
                 const addActions = document.createElement('div');
                 addActions.className = 'add-actions';
 
+                // 添加图文
                 const addTextImgBtn = document.createElement('div');
                 addTextImgBtn.className = 'add-new-feed-btn';
                 addTextImgBtn.innerHTML = '<i class="fas fa-edit"></i> 添加图文';
@@ -774,6 +774,7 @@
                 };
                 addActions.appendChild(addTextImgBtn);
 
+                // 添加纯图片
                 const addImgOnlyBtn = document.createElement('div');
                 addImgOnlyBtn.className = 'add-new-feed-btn';
                 addImgOnlyBtn.innerHTML = '<i class="fas fa-image"></i> 添加图片';
@@ -784,6 +785,18 @@
                     renderFeeds(postId, containerId);
                 };
                 addActions.appendChild(addImgOnlyBtn);
+
+                // 添加纯文字
+                const addTextOnlyBtn = document.createElement('div');
+                addTextOnlyBtn.className = 'add-new-feed-btn';
+                addTextOnlyBtn.innerHTML = '<i class="fas fa-font"></i> 添加文字';
+                addTextOnlyBtn.onclick = () => {
+                    if(!document.body.classList.contains('edit-mode')) return;
+                    feedsData.push({ type: 'text', text: '新的文字...', img: '' });
+                    saveFeedsData(postId, feedsData);
+                    renderFeeds(postId, containerId);
+                };
+                addActions.appendChild(addTextOnlyBtn);
 
                 container.appendChild(addActions);
             }
@@ -992,6 +1005,10 @@
                         let feedsData = getFeedsData(postId);
                         if(feedsData && feedsData[index]) {
                             feedsData[index].img = base64;
+                            // 如果原本是纯文字，上传图片后自动转为图文格式
+                            if (feedsData[index].type === 'text') {
+                                feedsData[index].type = 'text-img';
+                            }
                             saveFeedsData(postId, feedsData);
                             renderFeeds(postId, postId);
                         }
